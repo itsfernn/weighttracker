@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="A private weight and body composition tracker with weekly trends, goals, BMI, lean body mass, and FFMI.">
+  <meta name="theme-color" content="#0c110f">
+  <title>Weighline — Weight &amp; body composition tracker</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <script>
+    (() => {
+      try {
+        const saved = localStorage.getItem("weighline:theme");
+        const dark = saved ? saved === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+        document.documentElement.dataset.theme = dark ? "dark" : "light";
+        const themeColor = document.querySelector('meta[name="theme-color"]');
+        if (themeColor) themeColor.content = dark ? "#0b100e" : "#f2f4ed";
+      } catch {
+        document.documentElement.dataset.theme = "dark";
+      }
+    })();
+  </script>
+</head>
+<body>
+  <svg class="icon-sprite" aria-hidden="true">
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 8.9 19.3a1.7 1.7 0 0 0-1.88.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.7 15a1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.7 8.9a1.7 1.7 0 0 0-.34-1.88l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.7a1.7 1.7 0 0 0 1.03-1.56V3a2 2 0 1 1 4 0v.09A1.7 1.7 0 0 0 15.1 4.7a1.7 1.7 0 0 0 1.88-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.3 9c.14.4.42.74.78.97.3.18.64.28.99.28H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51.75Z"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M6.35 17.65l-1.42 1.42M19.07 4.93l-1.42 1.42"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4m0 0 4 4m-4-4L8 8M5 21h14"/></symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 15H6L5 6M10 11v6M14 11v6"/></symbol>
+    <symbol id="i-arrow-up" viewBox="0 0 24 24"><path d="M12 19V5m0 0-6 6m6-6 6 6"/></symbol>
+    <symbol id="i-arrow-down" viewBox="0 0 24 24"><path d="M12 5v14m0 0 6-6m-6 6-6-6"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-3.5 8-10V5l-8-3-8 3v7c0 6.5 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></symbol>
+    <symbol id="i-scale" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="4"/><path d="M8 9a5 5 0 0 1 8 0"/><path d="m12 12 2.5-2"/></symbol>
+    <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1"/></symbol>
+    <symbol id="i-pulse" viewBox="0 0 24 24"><path d="M3 12h4l2.5-6 5 12 2.5-6h4"/></symbol>
+    <symbol id="i-activity" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20V8"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+  </svg>
+
+  <header class="topbar">
+    <div class="shell topbar-inner">
+      <a class="brand" href="./" aria-label="Weighline home">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 28 28" fill="none">
+            <path d="M5.5 19.5 10 12l4 5.5 3.5-4.5 5 6.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="21.5" cy="7.5" r="2" fill="currentColor"/>
+          </svg>
+        </span>
+        <span class="brand-name">weighline</span>
+      </a>
+      <div class="topbar-actions">
+        <span class="local-pill" title="Your entries never leave this browser">
+          <svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg>
+          <span>Local only</span>
+        </span>
+        <button class="icon-button" id="themeToggle" type="button" aria-label="Switch to light theme">
+          <svg class="icon theme-icon-dark" aria-hidden="true"><use href="#i-sun"/></svg>
+          <svg class="icon theme-icon-light" aria-hidden="true"><use href="#i-moon"/></svg>
+        </button>
+        <button class="button button-primary button-compact" id="openLogButton" type="button" aria-label="Log a weigh-in">
+          <svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>
+          <span>Log weigh-in</span>
+        </button>
+        <button class="icon-button" id="openSettingsButton" type="button" aria-label="Open settings">
+          <svg class="icon" aria-hidden="true"><use href="#i-settings"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="shell">
+    <section class="intro">
+      <div>
+        <p class="eyebrow"><span class="eyebrow-dot"></span><span id="todayLabel">Today</span></p>
+        <h1>Your weight,<br><em>in perspective.</em></h1>
+        <p class="intro-copy">Log the scale, see the signal. Weekly averages smooth out the noise so you can focus on the direction you're heading.</p>
+      </div>
+      <div class="intro-actions">
+        <button class="button button-primary" id="introLogButton" type="button">
+          <svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>
+          Log a weigh-in
+        </button>
+        <button class="button button-secondary" id="introSetupButton" type="button">
+          <svg class="icon" aria-hidden="true"><use href="#i-user"/></svg>
+          <span id="introSetupLabel">Set up profile</span>
+        </button>
+        <p class="intro-note"><svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg> No account. Nothing leaves your device.</p>
+      </div>
+    </section>
+
+    <section class="profile-nudge" id="profileNudge" hidden>
+      <div class="profile-nudge-icon"><svg class="icon" aria-hidden="true"><use href="#i-info"/></svg></div>
+      <p><strong>Unlock your body composition.</strong> Add your height to calculate BMI, lean mass, and FFMI.</p>
+      <button class="text-button" type="button" data-open-settings>Add height <span aria-hidden="true">→</span></button>
+    </section>
+
+    <section class="stat-grid" aria-label="At a glance">
+      <article class="stat-card stat-current">
+        <div class="stat-top">
+          <span class="stat-label"><svg class="icon" aria-hidden="true"><use href="#i-scale"/></svg>Current weight</span>
+          <span class="stat-meta" id="currentDate">No data</span>
+        </div>
+        <div class="stat-value-row">
+          <span class="stat-value" id="currentWeight">—</span>
+          <span class="stat-unit" id="currentWeightUnit">kg</span>
+        </div>
+        <div class="stat-foot" id="currentDelta">Log your first weigh-in to get started.</div>
+      </article>
+
+      <article class="stat-card">
+        <div class="stat-top">
+          <span class="stat-label"><svg class="icon" aria-hidden="true"><use href="#i-activity"/></svg>Weekly average</span>
+          <span class="stat-meta" id="weeklyDate">No data</span>
+        </div>
+        <div class="stat-value-row">
+          <span class="stat-value" id="weeklyAverage">—</span>
+          <span class="stat-unit" id="weeklyAverageUnit">kg</span>
+        </div>
+        <div class="stat-foot" id="weeklyDelta">Weekly averages appear after your first entry.</div>
+      </article>
+
+      <article class="stat-card">
+        <div class="stat-top">
+          <span class="stat-label"><svg class="icon" aria-hidden="true"><use href="#i-pulse"/></svg>Body fat</span>
+          <span class="stat-meta" id="bodyFatDate">Not measured</span>
+        </div>
+        <div class="stat-value-row">
+          <span class="stat-value" id="bodyFatValue">—</span>
+          <span class="stat-unit" id="bodyFatUnit">%</span>
+        </div>
+        <div class="stat-foot" id="bodyFatDelta">Body fat is optional on each weigh-in.</div>
+      </article>
+
+      <article class="stat-card stat-goal">
+        <div class="stat-top">
+          <span class="stat-label"><svg class="icon" aria-hidden="true"><use href="#i-target"/></svg>Goal</span>
+          <span class="stat-meta" id="goalDate">Not set</span>
+        </div>
+        <div class="stat-value-row">
+          <span class="stat-value" id="goalValue">—</span>
+          <span class="stat-unit" id="goalUnit">kg</span>
+        </div>
+        <div class="goal-progress" id="goalProgressWrap" hidden>
+          <div class="goal-progress-track"><span id="goalProgressBar"></span></div>
+          <span class="goal-progress-label" id="goalProgressLabel">0%</span>
+        </div>
+        <div class="stat-foot" id="goalFoot"><button class="inline-action" type="button" data-open-settings>Set a target weight <span aria-hidden="true">→</span></button></div>
+      </article>
+    </section>
+
+    <section class="card chart-card" aria-labelledby="trendHeading">
+      <div class="card-heading chart-heading">
+        <div>
+          <p class="section-kicker">Trend</p>
+          <h2 id="trendHeading">The bigger picture</h2>
+          <p class="section-subtitle" id="chartSubtitle">Weekly averages smooth the daily ups and downs.</p>
+        </div>
+        <div class="chart-controls">
+          <div class="segmented" role="group" aria-label="Chart metric">
+            <button type="button" class="segment is-active" data-metric="weight" aria-pressed="true">Weight</button>
+            <button type="button" class="segment" data-metric="bodyFat" aria-pressed="false">Body fat</button>
+          </div>
+          <div class="segmented segmented-range" role="group" aria-label="Chart range">
+            <button type="button" class="segment" data-range="28" aria-pressed="false">4W</button>
+            <button type="button" class="segment" data-range="90" aria-pressed="false">3M</button>
+            <button type="button" class="segment is-active" data-range="182" aria-pressed="true">6M</button>
+            <button type="button" class="segment" data-range="365" aria-pressed="false">1Y</button>
+            <button type="button" class="segment" data-range="all" aria-pressed="false">All</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-shell">
+        <div class="chart-stage" id="chartStage">
+          <div class="chart-tooltip" id="chartTooltip" role="status" aria-live="polite"></div>
+          <svg class="chart-svg" id="chartSvg" role="img" aria-label="Weekly average weight chart"></svg>
+          <div class="chart-empty" id="chartEmpty" hidden>
+            <div class="empty-illustration" aria-hidden="true">
+              <svg viewBox="0 0 120 80" fill="none">
+                <path d="M6 66h108" stroke="currentColor" stroke-opacity=".18" stroke-linecap="round"/>
+                <path d="M9 57c14-2 18-13 31-12s16 11 29 7 18-19 31-22 15 3 20 1" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                <circle cx="9" cy="57" r="3" fill="currentColor"/>
+                <circle cx="40" cy="45" r="3" fill="currentColor"/>
+                <circle cx="69" cy="52" r="3" fill="currentColor"/>
+                <circle cx="100" cy="30" r="3" fill="currentColor"/>
+              </svg>
+            </div>
+            <p class="chart-empty-title" id="chartEmptyTitle">Your trend starts here</p>
+            <p class="chart-empty-copy" id="chartEmptyCopy">Log a few weigh-ins and your weekly averages will take shape.</p>
+            <button class="button button-primary button-compact" type="button" data-log>
+              <svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>
+              Log a weigh-in
+            </button>
+          </div>
+        </div>
+        <div class="chart-footer">
+          <div class="legend" aria-hidden="true">
+            <span class="legend-item"><span class="legend-line"></span>Weekly average</span>
+            <span class="legend-item"><span class="legend-dot"></span>Individual weigh-ins</span>
+            <span class="legend-item" id="goalLegend"><span class="legend-dash"></span>Goal</span>
+          </div>
+          <p class="chart-insight" id="chartInsight"></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="composition-section" aria-labelledby="compositionHeading">
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">Body composition</p>
+          <h2 id="compositionHeading">More than the scale</h2>
+          <p class="section-subtitle" id="compositionSubtitle">Add your height to unlock BMI, lean mass, and FFMI.</p>
+        </div>
+        <button class="text-button" type="button" data-open-settings>Edit profile <span aria-hidden="true">→</span></button>
+      </div>
+
+      <div class="metric-grid">
+        <article class="card metric-card">
+          <div class="metric-icon"><svg class="icon" aria-hidden="true"><use href="#i-scale"/></svg></div>
+          <div class="metric-body">
+            <div class="metric-label">BMI</div>
+            <div class="metric-value-row"><span class="metric-value" id="bmiValue">—</span><span class="metric-unit" id="bmiUnit">kg/m²</span></div>
+            <div class="metric-foot" id="bmiFoot">Add your height in settings.</div>
+          </div>
+        </article>
+        <article class="card metric-card">
+          <div class="metric-icon"><svg class="icon" aria-hidden="true"><use href="#i-pulse"/></svg></div>
+          <div class="metric-body">
+            <div class="metric-label">Body fat</div>
+            <div class="metric-value-row"><span class="metric-value" id="metricBodyFatValue">—</span><span class="metric-unit">%</span></div>
+            <div class="metric-foot" id="metricBodyFatFoot">Log a body fat reading to track it.</div>
+          </div>
+        </article>
+        <article class="card metric-card">
+          <div class="metric-icon"><svg class="icon" aria-hidden="true"><use href="#i-activity"/></svg></div>
+          <div class="metric-body">
+            <div class="metric-label">Lean body mass</div>
+            <div class="metric-value-row"><span class="metric-value" id="lbmValue">—</span><span class="metric-unit" id="lbmUnit">kg</span></div>
+            <div class="metric-foot" id="lbmFoot">Requires a body fat reading.</div>
+          </div>
+        </article>
+        <article class="card metric-card metric-card-ffmi">
+          <div class="metric-icon"><svg class="icon" aria-hidden="true"><use href="#i-target"/></svg></div>
+          <div class="metric-body">
+            <div class="metric-label">FFMI</div>
+            <div class="metric-value-row"><span class="metric-value" id="ffmiValue">—</span><span class="metric-unit">kg/m²</span></div>
+            <div class="metric-foot" id="ffmiFoot">Fat-free mass index from your latest body fat reading.</div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="card history-card" aria-labelledby="historyHeading">
+      <div class="card-heading history-heading">
+        <div>
+          <p class="section-kicker">History</p>
+          <h2 id="historyHeading">Weigh-in log</h2>
+          <p class="section-subtitle" id="historySubtitle">Every entry, saved locally.</p>
+        </div>
+        <div class="history-actions">
+          <button class="button button-secondary button-compact" id="importButton" type="button">
+            <svg class="icon" aria-hidden="true"><use href="#i-upload"/></svg>
+            Import CSV
+          </button>
+          <button class="button button-secondary button-compact" id="exportButton" type="button">
+            <svg class="icon" aria-hidden="true"><use href="#i-download"/></svg>
+            Export CSV
+          </button>
+          <input id="fileInput" type="file" accept=".csv,text/csv" hidden>
+        </div>
+      </div>
+
+      <div class="history-list" id="historyList"></div>
+      <div class="history-empty" id="historyEmpty">
+        <p>No weigh-ins yet.</p>
+        <button class="text-button" type="button" data-log>Log your first weigh-in <span aria-hidden="true">→</span></button>
+      </div>
+      <div class="history-footer" id="historyFooter" hidden>
+        <span id="historyCount">0 entries</span>
+        <span class="history-storage"><svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg> Stored on this device</span>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <p><strong>weighline</strong> · Private by design. Your data lives in this browser's local storage.</p>
+      <p>Back up regularly with Export CSV. Weekly averages are calculated Monday through Sunday.</p>
+    </footer>
+  </main>
+
+  <dialog class="modal" id="entryDialog" aria-labelledby="entryDialogTitle">
+    <form id="entryForm" novalidate>
+      <div class="modal-header">
+        <div>
+          <p class="section-kicker" id="entryKicker">Daily check-in</p>
+          <h2 id="entryDialogTitle">Log a weigh-in</h2>
+          <p class="modal-copy">Use the reading from your scale. The time is set to now, but you can adjust it.</p>
+        </div>
+        <button class="icon-button modal-close" type="button" data-close aria-label="Close">
+          <svg class="icon" aria-hidden="true"><use href="#i-close"/></svg>
+        </button>
+      </div>
+      <div class="form-grid">
+        <label class="field field-full">
+          <span class="field-label">Date &amp; time</span>
+          <input id="entryDate" name="date" type="datetime-local" required>
+          <span class="field-error" id="entryDateError"></span>
+        </label>
+        <label class="field">
+          <span class="field-label">Weight</span>
+          <span class="input-wrap">
+            <input id="entryWeight" name="weight" type="number" inputmode="decimal" step="0.1" min="1" required autocomplete="off">
+            <span class="input-suffix" id="entryWeightUnit">kg</span>
+          </span>
+          <span class="field-error" id="entryWeightError"></span>
+        </label>
+        <label class="field">
+          <span class="field-label">Body fat <span class="optional">optional</span></span>
+          <span class="input-wrap">
+            <input id="entryBodyFat" name="bodyFat" type="number" inputmode="decimal" step="0.1" min="0" max="80" placeholder="—" autocomplete="off">
+            <span class="input-suffix">%</span>
+          </span>
+          <span class="field-error" id="entryBodyFatError"></span>
+        </label>
+        <label class="field field-full">
+          <span class="field-label">Note <span class="optional">optional</span></span>
+          <input id="entryNote" name="note" type="text" maxlength="140" placeholder="Morning weigh-in, after a rest day…" autocomplete="off">
+        </label>
+      </div>
+      <div class="modal-footer">
+        <button class="button button-danger-ghost" id="deleteEntryButton" type="button" hidden>
+          <svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg>
+          Delete
+        </button>
+        <span class="footer-spacer"></span>
+        <button class="button button-secondary" type="button" data-close>Cancel</button>
+        <button class="button button-primary" id="saveEntryButton" type="submit">
+          <svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>
+          Save weigh-in
+        </button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="modal" id="settingsDialog" aria-labelledby="settingsDialogTitle">
+    <form id="settingsForm" novalidate>
+      <div class="modal-header">
+        <div>
+          <p class="section-kicker">Your setup</p>
+          <h2 id="settingsDialogTitle">Profile &amp; goals</h2>
+          <p class="modal-copy">These details power your calculations and goal progress.</p>
+        </div>
+        <button class="icon-button modal-close" type="button" data-close aria-label="Close">
+          <svg class="icon" aria-hidden="true"><use href="#i-close"/></svg>
+        </button>
+      </div>
+
+      <div class="settings-section">
+        <span class="field-label">Units</span>
+        <div class="segmented segmented-units" role="group" aria-label="Unit system">
+          <label class="segment-option">
+            <input type="radio" name="unitSystem" value="metric" checked>
+            <span>Metric <small>kg · cm</small></span>
+          </label>
+          <label class="segment-option">
+            <input type="radio" name="unitSystem" value="imperial">
+            <span>Imperial <small>lb · in</small></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="form-grid settings-grid">
+        <label class="field">
+          <span class="field-label">Height</span>
+          <span class="input-wrap">
+            <input id="heightInput" name="height" type="number" inputmode="decimal" step="0.1" min="1" placeholder="—" autocomplete="off">
+            <span class="input-suffix" id="heightUnit">cm</span>
+          </span>
+          <span class="field-hint">Used for BMI, lean mass, and FFMI.</span>
+          <span class="field-error" id="heightError"></span>
+        </label>
+        <div class="field settings-note">
+          <span class="field-label">Why we ask</span>
+          <p>Everything stays in this browser. Height and body fat are only used to calculate your metrics.</p>
+        </div>
+      </div>
+
+      <div class="settings-divider">
+        <span>Goal</span>
+        <span class="settings-divider-hint">All fields optional</span>
+      </div>
+
+      <div class="form-grid settings-grid">
+        <label class="field">
+          <span class="field-label">Target weight</span>
+          <span class="input-wrap">
+            <input id="goalWeightInput" name="goalWeight" type="number" inputmode="decimal" step="0.1" min="1" placeholder="—" autocomplete="off">
+            <span class="input-suffix" id="goalWeightUnit">kg</span>
+          </span>
+          <span class="field-error" id="goalWeightError"></span>
+        </label>
+        <label class="field">
+          <span class="field-label">Target body fat <span class="optional">optional</span></span>
+          <span class="input-wrap">
+            <input id="goalBodyFatInput" name="goalBodyFat" type="number" inputmode="decimal" step="0.1" min="0" max="80" placeholder="—" autocomplete="off">
+            <span class="input-suffix">%</span>
+          </span>
+          <span class="field-error" id="goalBodyFatError"></span>
+        </label>
+        <label class="field field-full">
+          <span class="field-label">Target date <span class="optional">optional</span></span>
+          <input id="goalDateInput" name="goalDate" type="date">
+          <span class="field-hint">A date helps us calculate the weekly pace you need.</span>
+        </label>
+      </div>
+
+      <div class="danger-zone">
+        <div>
+          <strong>Erase all data</strong>
+          <p>Deletes every weigh-in, goal, and profile detail from this browser.</p>
+        </div>
+        <button class="button button-danger-ghost button-compact" id="resetButton" type="button">Erase data</button>
+      </div>
+
+      <div class="modal-footer">
+        <span class="footer-spacer"></span>
+        <button class="button button-secondary" type="button" data-close>Cancel</button>
+        <button class="button button-primary" type="submit">
+          <svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>
+          Save changes
+        </button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="modal modal-confirm" id="confirmDialog" aria-labelledby="confirmTitle">
+    <form id="confirmForm">
+      <div class="confirm-icon"><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg></div>
+      <h2 id="confirmTitle">Delete this weigh-in?</h2>
+      <p id="confirmCopy">This can't be undone. Your weekly averages will be recalculated.</p>
+      <div class="modal-footer modal-footer-center">
+        <button class="button button-secondary" type="button" data-close>Cancel</button>
+        <button class="button button-danger" id="confirmButton" type="submit">Delete</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="false"></div>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
