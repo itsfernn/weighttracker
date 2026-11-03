@@ -52,6 +52,7 @@
     bodyFatTag: document.getElementById("bodyFatTag"),
     bodyFatScale: document.getElementById("bodyFatScale"),
     ffmiValue: document.getElementById("ffmiValue"),
+    ffmiLabel: document.getElementById("ffmiLabel"),
     ffmiTag: document.getElementById("ffmiTag"),
     ffmiScale: document.getElementById("ffmiScale"),
     ffmiFoot: document.getElementById("ffmiFoot"),
@@ -118,7 +119,7 @@
     return {
       version: 1,
       unitSystem: "metric",
-      profile: { heightCm: null, referenceSex: null },
+      profile: { heightCm: null, referenceSex: null, ffmiMode: "standard" },
       entries: [],
       goal: { weightKg: null, bodyFatPct: null, date: null },
     };
@@ -139,6 +140,7 @@
     base.profile.referenceSex = ["male", "female"].includes(input.profile?.referenceSex)
       ? input.profile.referenceSex
       : null;
+    base.profile.ffmiMode = input.profile?.ffmiMode === "adjusted" ? "adjusted" : "standard";
 
     const goal = input.goal || {};
     const goalWeight = Number(goal.weightKg);
@@ -586,6 +588,12 @@
     element.className = `metric-tag is-${context.tone}`;
   }
 
+  function setMetricFoot(element, text) {
+    if (!element) return;
+    element.textContent = text || "";
+    element.hidden = !text;
+  }
+
   function renderMetricScale(element, context, value) {
     if (!element) return;
     if (!context) {
@@ -758,15 +766,17 @@
       dom.bmiValue.textContent = formatNumber(metrics.bmi, 1);
       setMetricTag(dom.bmiTag, context);
       renderMetricScale(dom.bmiScale, context, metrics.bmi);
-      dom.bmiFoot.textContent = context.description;
+      setMetricFoot(dom.bmiFoot, "");
     } else {
       dom.bmiValue.textContent = "—";
       setMetricTag(dom.bmiTag, null);
       renderMetricScale(dom.bmiScale, null);
-      dom.bmiFoot.textContent =
+      setMetricFoot(
+        dom.bmiFoot,
         metrics.latest && !state.profile.heightCm
           ? "Add your height in settings."
-          : "Log a weigh-in to calculate your BMI.";
+          : "Log a weigh-in to calculate your BMI.",
+      );
     }
 
     if (metrics.bodyFatPct !== null) {
@@ -775,47 +785,59 @@
         const context = getBodyFatContext(metrics.bodyFatPct, sex);
         setMetricTag(dom.bodyFatTag, context);
         renderMetricScale(dom.bodyFatScale, context, metrics.bodyFatPct);
-        dom.metricBodyFatFoot.textContent = context.description;
+        setMetricFoot(dom.metricBodyFatFoot, "");
       } else {
         setMetricTag(dom.bodyFatTag, { label: "Set sex", tone: "neutral" });
         renderMetricScale(dom.bodyFatScale, null);
-        dom.metricBodyFatFoot.textContent =
-          "Set a reference sex in settings for body fat context.";
+        setMetricFoot(
+          dom.metricBodyFatFoot,
+          "Set a reference sex in settings for body fat context.",
+        );
       }
     } else {
       dom.metricBodyFatValue.textContent = "—";
       setMetricTag(dom.bodyFatTag, null);
       renderMetricScale(dom.bodyFatScale, null);
-      dom.metricBodyFatFoot.textContent = "Add body fat to any weigh-in to track it.";
+      setMetricFoot(dom.metricBodyFatFoot, "Add body fat to any weigh-in to track it.");
     }
 
     if (metrics.leanMassKg !== null) {
       dom.lbmValue.textContent = formatNumber(toDisplayWeight(metrics.leanMassKg), 1);
-      dom.lbmFoot.textContent = metrics.fatMassKg !== null
-        ? `Fat mass ${formatNumber(toDisplayWeight(metrics.fatMassKg), 1)} ${unit}`
-        : "Calculated from your latest body fat reading.";
+      setMetricFoot(
+        dom.lbmFoot,
+        metrics.fatMassKg !== null
+          ? `Fat mass ${formatNumber(toDisplayWeight(metrics.fatMassKg), 1)} ${unit}`
+          : "Calculated from your latest body fat reading.",
+      );
     } else {
       dom.lbmValue.textContent = "—";
-      dom.lbmFoot.textContent = "Requires a body fat reading.";
+      setMetricFoot(dom.lbmFoot, "Requires a body fat reading.");
     }
 
-    if (metrics.ffmi !== null) {
-      dom.ffmiValue.textContent = formatNumber(metrics.ffmi, 1);
+    const adjustedFfmi = state.profile.ffmiMode === "adjusted";
+    const ffmiDisplayValue = adjustedFfmi ? metrics.normalizedFfmi : metrics.ffmi;
+    dom.ffmiLabel.textContent = adjustedFfmi ? "Adjusted FFMI" : "FFMI";
+
+    if (ffmiDisplayValue !== null) {
+      dom.ffmiValue.textContent = formatNumber(ffmiDisplayValue, 1);
       if (sex) {
-        const context = getFfmiContext(metrics.ffmi, sex);
+        const context = getFfmiContext(ffmiDisplayValue, sex);
         setMetricTag(dom.ffmiTag, context);
-        renderMetricScale(dom.ffmiScale, context, metrics.ffmi);
-        dom.ffmiFoot.textContent = `Adj. FFMI ${formatNumber(metrics.normalizedFfmi, 1)} · ${context.description}`;
+        renderMetricScale(dom.ffmiScale, context, ffmiDisplayValue);
+        setMetricFoot(dom.ffmiFoot, "");
       } else {
         setMetricTag(dom.ffmiTag, { label: "Set sex", tone: "neutral" });
         renderMetricScale(dom.ffmiScale, null);
-        dom.ffmiFoot.textContent = `Adj. FFMI ${formatNumber(metrics.normalizedFfmi, 1)} · set a reference sex in settings for context.`;
+        setMetricFoot(
+          dom.ffmiFoot,
+          "Set a reference sex in settings for FFMI context.",
+        );
       }
     } else {
       dom.ffmiValue.textContent = "—";
       setMetricTag(dom.ffmiTag, null);
       renderMetricScale(dom.ffmiScale, null);
-      dom.ffmiFoot.textContent = "Requires body fat and height.";
+      setMetricFoot(dom.ffmiFoot, "Requires body fat and height.");
     }
   }
 
@@ -1438,6 +1460,11 @@
       state.goal.bodyFatPct !== null ? String(round(state.goal.bodyFatPct, 1)) : "";
     dom.goalDateInput.value = state.goal.date || "";
     dom.referenceSexInput.value = state.profile.referenceSex || "";
+    const ffmiMode = state.profile.ffmiMode === "adjusted" ? "adjusted" : "standard";
+    const ffmiRadio = dom.settingsForm.querySelector(
+      `input[name="ffmiMode"][value="${ffmiMode}"]`,
+    );
+    if (ffmiRadio) ffmiRadio.checked = true;
     dom.settingsDialog.showModal();
   }
 
@@ -1590,6 +1617,10 @@
     state.profile.referenceSex = ["male", "female"].includes(dom.referenceSexInput.value)
       ? dom.referenceSexInput.value
       : null;
+    state.profile.ffmiMode =
+      dom.settingsForm.querySelector('input[name="ffmiMode"]:checked')?.value === "adjusted"
+        ? "adjusted"
+        : "standard";
     state.goal = goalWeightKg === null
       ? { weightKg: null, bodyFatPct: null, date: null }
       : {

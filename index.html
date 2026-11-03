@@ -239,7 +239,7 @@
         <article class="card metric-card metric-card-ffmi">
           <div class="metric-icon"><svg class="icon" aria-hidden="true"><use href="#i-target"/></svg></div>
           <div class="metric-body">
-            <div class="metric-label-row"><div class="metric-label">FFMI</div><span class="metric-tag" id="ffmiTag" hidden></span></div>
+            <div class="metric-label-row"><div class="metric-label" id="ffmiLabel">FFMI</div><span class="metric-tag" id="ffmiTag" hidden></span></div>
             <div class="metric-value-row"><span class="metric-value" id="ffmiValue">—</span><span class="metric-unit">kg/m²</span></div>
             <div class="metric-scale" id="ffmiScale" hidden></div>
             <div class="metric-foot" id="ffmiFoot">Fat-free mass index from your latest body fat reading.</div>
@@ -385,6 +385,21 @@
           </select>
           <span class="field-hint">Used only for FFMI and body fat ranges.</span>
         </label>
+      </div>
+
+      <div class="settings-section settings-ffmi-mode">
+        <span class="field-label">FFMI display</span>
+        <div class="segmented segmented-units" role="group" aria-label="FFMI display">
+          <label class="segment-option">
+            <input type="radio" name="ffmiMode" value="standard" checked>
+            <span>Standard</span>
+          </label>
+          <label class="segment-option">
+            <input type="radio" name="ffmiMode" value="adjusted">
+            <span>Adjusted <small>1.80 m</small></span>
+          </label>
+        </div>
+        <span class="field-hint">Adjusted FFMI = FFMI + 6.3 × (1.80 − height).</span>
       </div>
 
       <div class="settings-divider">

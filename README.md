@@ -14,6 +14,7 @@ All data stays in the browser using `localStorage`. There is no account, server,
 - Progress, remaining distance, and required weekly pace
 - BMI, body fat, lean body mass, fat mass, FFMI, and adjusted FFMI
 - Color-coded BMI, body fat, and FFMI ranges with an optional reference sex
+- Optional adjusted FFMI display normalized to 1.80 m
 - Latest five weigh-ins on the dashboard with a full-screen history view
 - Edit and delete past weigh-ins from either view
 - CSV import and export for backups or moving between browsers
@@ -62,7 +63,7 @@ Import merges new rows into existing data and skips duplicate timestamps. The im
 - **Lean body mass** = weight × (1 − body fat percentage / 100)
 - **Fat mass** = weight × body fat percentage / 100
 - **FFMI** = lean body mass / height in meters squared
-- **Adjusted FFMI** = FFMI + 6.3 × (1.8 − height in meters)
+- **Adjusted FFMI** = FFMI + 6.3 × (1.8 − height in meters). Toggle between standard and adjusted FFMI in settings.
 - **Weekly average** = the mean of all weight or body fat readings from Monday through Sunday
 
 BMI is a broad population measure and does not account for body composition. Its categories are not sex-specific for adults. FFMI and body fat reference ranges use the optional reference sex selected in the profile.
