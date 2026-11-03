@@ -478,65 +478,6 @@ svg {
   justify-content: flex-start;
 }
 
-.intro-note {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  margin-top: 5px;
-  color: var(--faint);
-  font-size: 11px;
-  text-align: center;
-}
-
-.intro-note .icon {
-  width: 13px;
-  height: 13px;
-}
-
-.profile-nudge {
-  display: flex;
-  align-items: center;
-  gap: 13px;
-  margin-bottom: 16px;
-  padding: 13px 16px;
-  border: 1px solid var(--brand-line);
-  border-radius: var(--radius-md);
-  background: linear-gradient(90deg, var(--brand-soft), transparent 78%);
-  color: var(--muted);
-  font-size: 13px;
-  animation: rise 600ms var(--ease) both;
-}
-
-.profile-nudge[hidden] {
-  display: none;
-}
-
-.profile-nudge p {
-  flex: 1;
-}
-
-.profile-nudge strong {
-  color: var(--text);
-  font-weight: 650;
-}
-
-.profile-nudge-icon {
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  flex: 0 0 auto;
-  border-radius: 9px;
-  color: var(--brand);
-  background: var(--brand-soft);
-}
-
-.profile-nudge-icon .icon {
-  width: 15px;
-  height: 15px;
-}
-
 .stat-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1590,16 +1531,6 @@ svg {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-.settings-note {
-  justify-content: flex-end;
-}
-
-.settings-note p {
-  color: var(--faint);
-  font-size: 10.5px;
-  line-height: 1.55;
-}
-
 .settings-divider {
   display: flex;
   align-items: center;
@@ -1873,7 +1804,7 @@ svg {
 
   .intro-actions {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     width: 100%;
     margin-top: 24px;
     padding: 0;
@@ -1882,27 +1813,6 @@ svg {
   .intro-actions .button {
     justify-content: center;
     padding-inline: 10px;
-  }
-
-  .intro-note {
-    grid-column: 1 / -1;
-    margin-top: 9px;
-  }
-
-  .profile-nudge {
-    align-items: flex-start;
-    flex-wrap: wrap;
-    gap: 8px 10px;
-    padding: 12px 13px;
-    font-size: 12px;
-  }
-
-  .profile-nudge p {
-    flex-basis: calc(100% - 42px);
-  }
-
-  .profile-nudge .text-button {
-    margin-left: 38px;
   }
 
   .stat-grid {
@@ -2166,17 +2076,9 @@ svg {
     display: none;
   }
 
-  .intro-actions {
-    grid-template-columns: 1fr;
-  }
-
   .intro-actions .button {
     justify-content: flex-start;
     padding-inline: 15px;
-  }
-
-  .intro-note {
-    grid-column: auto;
   }
 
   .stat-grid {
@@ -2237,10 +2139,6 @@ svg {
   .form-grid,
   .settings-grid {
     grid-template-columns: 1fr;
-  }
-
-  .settings-note {
-    display: none;
   }
 
   .modal-footer {

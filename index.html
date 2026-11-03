@@ -82,25 +82,14 @@
       <div>
         <p class="eyebrow"><span class="eyebrow-dot"></span><span id="todayLabel">Today</span></p>
         <h1>Your weight,<br><em>in perspective.</em></h1>
-        <p class="intro-copy">Log the scale, see the signal. Weekly averages smooth out the noise so you can focus on the direction you're heading.</p>
+        <p class="intro-copy">Log daily. Weekly averages show the direction, not the noise.</p>
       </div>
       <div class="intro-actions">
         <button class="button button-primary" id="introLogButton" type="button">
           <svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>
           Log a weigh-in
         </button>
-        <button class="button button-secondary" id="introSetupButton" type="button">
-          <svg class="icon" aria-hidden="true"><use href="#i-user"/></svg>
-          <span id="introSetupLabel">Set up profile</span>
-        </button>
-        <p class="intro-note"><svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg> No account. Nothing leaves your device.</p>
       </div>
-    </section>
-
-    <section class="profile-nudge" id="profileNudge" hidden>
-      <div class="profile-nudge-icon"><svg class="icon" aria-hidden="true"><use href="#i-info"/></svg></div>
-      <p><strong>Unlock your body composition.</strong> Add your height to calculate BMI, lean mass, and FFMI.</p>
-      <button class="text-button" type="button" data-open-settings>Add height <span aria-hidden="true">→</span></button>
     </section>
 
     <section class="stat-grid" aria-label="At a glance">
@@ -153,7 +142,7 @@
           <div class="goal-progress-track"><span id="goalProgressBar"></span></div>
           <span class="goal-progress-label" id="goalProgressLabel">0%</span>
         </div>
-        <div class="stat-foot" id="goalFoot"><button class="inline-action" type="button" data-open-settings>Set a target weight <span aria-hidden="true">→</span></button></div>
+        <div class="stat-foot" id="goalFoot">Set a target weight in settings.</div>
       </article>
     </section>
 
@@ -220,7 +209,6 @@
           <h2 id="compositionHeading">More than the scale</h2>
           <p class="section-subtitle" id="compositionSubtitle">Add your height to unlock BMI, lean mass, and FFMI.</p>
         </div>
-        <button class="text-button" type="button" data-open-settings>Edit profile <span aria-hidden="true">→</span></button>
       </div>
 
       <div class="metric-grid">
@@ -291,8 +279,8 @@
     </section>
 
     <footer class="footer">
-      <p><strong>weighline</strong> · Private by design. Your data lives in this browser's local storage.</p>
-      <p>Back up regularly with Export CSV. Weekly averages are calculated Monday through Sunday.</p>
+      <p><strong>weighline</strong> · Private by design. No account, no cloud — your data stays in this browser.</p>
+      <p>Export a CSV backup regularly. Context ranges are general fitness references, not medical advice.</p>
     </footer>
   </main>
 
@@ -378,19 +366,15 @@
       </div>
 
       <div class="form-grid settings-grid">
-        <label class="field">
+        <label class="field field-full">
           <span class="field-label">Height</span>
           <span class="input-wrap">
             <input id="heightInput" name="height" type="number" inputmode="decimal" step="0.1" min="1" placeholder="—" autocomplete="off">
             <span class="input-suffix" id="heightUnit">cm</span>
           </span>
-          <span class="field-hint">Used for BMI, lean mass, and FFMI.</span>
+          <span class="field-hint">Used for BMI and FFMI.</span>
           <span class="field-error" id="heightError"></span>
         </label>
-        <div class="field settings-note">
-          <span class="field-label">Why we ask</span>
-          <p>Everything stays in this browser. Height and body fat are only used to calculate your metrics.</p>
-        </div>
       </div>
 
       <div class="settings-divider">

@@ -14,9 +14,6 @@
     openLogButton: document.getElementById("openLogButton"),
     openSettingsButton: document.getElementById("openSettingsButton"),
     introLogButton: document.getElementById("introLogButton"),
-    introSetupButton: document.getElementById("introSetupButton"),
-    introSetupLabel: document.getElementById("introSetupLabel"),
-    profileNudge: document.getElementById("profileNudge"),
     currentDate: document.getElementById("currentDate"),
     currentWeight: document.getElementById("currentWeight"),
     currentWeightUnit: document.getElementById("currentWeightUnit"),
@@ -626,8 +623,7 @@
       dom.goalValue.textContent = "—";
       dom.goalDate.textContent = "Not set";
       dom.goalProgressWrap.hidden = true;
-      dom.goalFoot.innerHTML =
-        '<button class="inline-action" type="button" data-open-settings>Set a target weight <span aria-hidden="true">→</span></button>';
+      dom.goalFoot.textContent = "Set a target weight in settings.";
     }
   }
 
@@ -648,8 +644,7 @@
       dom.bmiFoot.textContent = `${bmiLabel(metrics.bmi)}${heightLabel ? ` · ${heightLabel}` : ""}`;
     } else if (metrics.latest && !state.profile.heightCm) {
       dom.bmiValue.textContent = "—";
-      dom.bmiFoot.innerHTML =
-        '<button class="inline-action" type="button" data-open-settings>Add your height <span aria-hidden="true">→</span></button>';
+      dom.bmiFoot.textContent = "Add your height in settings.";
     } else {
       dom.bmiValue.textContent = "—";
       dom.bmiFoot.textContent = "Log a weigh-in to calculate your BMI.";
@@ -686,18 +681,11 @@
       dom.ffmiFoot.textContent = `Normalized ${formatNumber(metrics.normalizedFfmi, 1)} · from your latest body fat reading`;
     } else if (!state.profile.heightCm && metrics.bodyFatPct !== null) {
       dom.ffmiValue.textContent = "—";
-      dom.ffmiFoot.innerHTML =
-        '<button class="inline-action" type="button" data-open-settings>Add your height <span aria-hidden="true">→</span></button>';
+      dom.ffmiFoot.textContent = "Add your height in settings.";
     } else {
       dom.ffmiValue.textContent = "—";
       dom.ffmiFoot.textContent = "Requires body fat and height.";
     }
-  }
-
-  function renderProfileNudge() {
-    const shouldShow = state.entries.length > 0 && !state.profile.heightCm;
-    dom.profileNudge.hidden = !shouldShow;
-    dom.introSetupLabel.textContent = state.profile.heightCm ? "Edit profile" : "Set up profile";
   }
 
   function getChartConfig() {
@@ -1123,7 +1111,6 @@
     updateTodayLabel();
     renderSummary();
     renderComposition();
-    renderProfileNudge();
     renderChart();
     renderHistory();
   }
@@ -1809,12 +1796,6 @@
       return;
     }
 
-    const settingsTrigger = event.target.closest("[data-open-settings]");
-    if (settingsTrigger) {
-      openSettings();
-      return;
-    }
-
     const closeTrigger = event.target.closest("[data-close]");
     if (closeTrigger) {
       closeTrigger.closest("dialog")?.close();
@@ -1861,7 +1842,6 @@
     dom.openLogButton.addEventListener("click", () => openEntryDialog());
     dom.introLogButton.addEventListener("click", () => openEntryDialog());
     dom.openSettingsButton.addEventListener("click", openSettings);
-    dom.introSetupButton.addEventListener("click", openSettings);
     dom.entryForm.addEventListener("submit", handleEntrySubmit);
     dom.settingsForm.addEventListener("submit", handleSettingsSubmit);
     dom.deleteEntryButton.addEventListener("click", () => {
