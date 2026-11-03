@@ -1480,16 +1480,8 @@ svg {
   display: none;
 }
 
-.history-storage {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.history-storage .icon {
-  width: 12px;
-  height: 12px;
-  color: var(--brand);
+.history-footer .text-button {
+  font-size: 10.5px;
 }
 
 .footer {
@@ -1845,6 +1837,74 @@ svg {
 
 .modal-confirm .modal-footer {
   justify-content: center;
+}
+
+.log-dialog {
+  width: min(980px, calc(100% - 32px));
+  height: min(86vh, 850px);
+  max-height: 90dvh;
+  overflow: hidden;
+  padding: 0;
+}
+
+.log-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  padding: 26px 27px;
+}
+
+.log-content .modal-header {
+  margin-bottom: 10px;
+}
+
+.full-log-scroll {
+  flex: 1;
+  min-height: 0;
+  margin-top: 12px;
+  padding-right: 4px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.full-log-list {
+  margin-top: 0;
+}
+
+.full-log-list .history-columns {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--surface);
+}
+
+.log-content .modal-footer {
+  margin-top: 16px;
+}
+
+@media (max-width: 760px) {
+  .modal.log-dialog {
+    width: 100%;
+    height: 100dvh;
+    max-height: 100dvh;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+  }
+
+  .log-content {
+    padding: 20px 16px calc(14px + env(safe-area-inset-bottom));
+  }
+
+  .full-log-scroll {
+    margin-top: 8px;
+    padding-right: 0;
+  }
+
+  .log-content .modal-footer {
+    margin-top: 12px;
+  }
 }
 
 .toast-region {

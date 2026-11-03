@@ -14,7 +14,8 @@ All data stays in the browser using `localStorage`. There is no account, server,
 - Progress, remaining distance, and required weekly pace
 - BMI, body fat, lean body mass, fat mass, FFMI, and normalized FFMI
 - Color-coded BMI, body fat, and FFMI ranges with an optional reference sex
-- Edit and delete past weigh-ins
+- Latest five weigh-ins on the dashboard with a full-screen history view
+- Edit and delete past weigh-ins from either view
 - CSV import and export for backups or moving between browsers
 - Metric and imperial units
 - Light and dark themes

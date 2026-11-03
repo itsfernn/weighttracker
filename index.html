@@ -296,7 +296,7 @@
       </div>
       <div class="history-footer" id="historyFooter" hidden>
         <span id="historyCount">0 entries</span>
-        <span class="history-storage"><svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg> Stored on this device</span>
+        <button class="text-button" id="openFullLogButton" type="button">View full log <span aria-hidden="true">→</span></button>
       </div>
     </section>
 
@@ -454,6 +454,32 @@
         </button>
       </div>
     </form>
+  </dialog>
+
+  <dialog class="modal log-dialog" id="logDialog" aria-labelledby="logDialogTitle">
+    <div class="log-content">
+      <div class="modal-header">
+        <div>
+          <p class="section-kicker">History</p>
+          <h2 id="logDialogTitle">Full weigh-in log</h2>
+          <p class="modal-copy" id="fullLogSubtitle">Newest first.</p>
+        </div>
+        <button class="icon-button modal-close" type="button" data-close aria-label="Close">
+          <svg class="icon" aria-hidden="true"><use href="#i-close"/></svg>
+        </button>
+      </div>
+      <div class="full-log-scroll" id="fullLogScroll">
+        <div class="history-list full-log-list" id="fullLogList"></div>
+        <div class="history-empty" id="fullLogEmpty" hidden>
+          <p>No weigh-ins yet.</p>
+          <button class="text-button" type="button" data-log>Log your first weigh-in <span aria-hidden="true">→</span></button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <span class="footer-spacer"></span>
+        <button class="button button-secondary" type="button" data-close>Close</button>
+      </div>
+    </div>
   </dialog>
 
   <dialog class="modal modal-confirm" id="confirmDialog" aria-labelledby="confirmTitle">

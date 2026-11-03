@@ -70,6 +70,12 @@
     historyEmpty: document.getElementById("historyEmpty"),
     historyFooter: document.getElementById("historyFooter"),
     historyCount: document.getElementById("historyCount"),
+    openFullLogButton: document.getElementById("openFullLogButton"),
+    logDialog: document.getElementById("logDialog"),
+    fullLogSubtitle: document.getElementById("fullLogSubtitle"),
+    fullLogScroll: document.getElementById("fullLogScroll"),
+    fullLogList: document.getElementById("fullLogList"),
+    fullLogEmpty: document.getElementById("fullLogEmpty"),
     importButton: document.getElementById("importButton"),
     exportButton: document.getElementById("exportButton"),
     fileInput: document.getElementById("fileInput"),
@@ -1214,22 +1220,10 @@
     if (focusDot) focusDot.style.opacity = "0";
   }
 
-  function renderHistory() {
-    const sorted = [...state.entries].sort((a, b) => new Date(b.at) - new Date(a.at));
+  const HISTORY_LIMIT = 5;
+
+  function buildHistoryRowsHtml(sorted) {
     const unit = weightUnit();
-
-    dom.historySubtitle.textContent = state.entries.length
-      ? `${pluralize(state.entries.length, "weigh-in")} saved locally.`
-      : "Every entry, saved locally.";
-    dom.historyEmpty.hidden = sorted.length > 0;
-    dom.historyFooter.hidden = sorted.length === 0;
-    dom.historyCount.textContent = pluralize(sorted.length, "entry", "entries");
-
-    if (!sorted.length) {
-      dom.historyList.innerHTML = "";
-      return;
-    }
-
     const chronological = [...state.entries];
     const previousById = new Map();
     chronological.forEach((entry, index) => {
@@ -1287,8 +1281,43 @@
         </div>
       </div>`;
     });
+    return `${`<div class="history-columns" role="row" aria-hidden="true"><span>Date</span><span>Weight</span><span>Body fat</span><span>Lean mass</span><span></span></div>`}${rows.join("")}`;
+  }
 
-    dom.historyList.innerHTML = `<div class="history-columns" role="row" aria-hidden="true"><span>Date</span><span>Weight</span><span>Body fat</span><span>Lean mass</span><span></span></div>${rows.join("")}`;
+  function renderHistory() {
+    const sorted = [...state.entries].sort((a, b) => new Date(b.at) - new Date(a.at));
+    const visible = sorted.slice(0, HISTORY_LIMIT);
+
+    dom.historySubtitle.textContent = sorted.length
+      ? sorted.length > HISTORY_LIMIT
+        ? `Latest ${HISTORY_LIMIT} of ${pluralize(sorted.length, "weigh-in")}.`
+        : `${pluralize(sorted.length, "weigh-in")} saved locally.`
+      : "Every entry, saved locally.";
+    dom.historyEmpty.hidden = sorted.length > 0;
+    dom.historyFooter.hidden = sorted.length === 0;
+    dom.historyCount.textContent =
+      sorted.length > HISTORY_LIMIT
+        ? `Showing ${HISTORY_LIMIT} of ${pluralize(sorted.length, "entry", "entries")}`
+        : pluralize(sorted.length, "entry", "entries");
+    dom.openFullLogButton.hidden = sorted.length <= HISTORY_LIMIT;
+    dom.historyList.innerHTML = visible.length
+      ? buildHistoryRowsHtml(visible)
+      : "";
+  }
+
+  function renderFullLog() {
+    const sorted = [...state.entries].sort((a, b) => new Date(b.at) - new Date(a.at));
+    dom.fullLogSubtitle.textContent = sorted.length
+      ? `${pluralize(sorted.length, "weigh-in")} · newest first.`
+      : "Newest first.";
+    dom.fullLogEmpty.hidden = sorted.length > 0;
+    dom.fullLogList.innerHTML = sorted.length ? buildHistoryRowsHtml(sorted) : "";
+  }
+
+  function openFullLog() {
+    renderFullLog();
+    dom.fullLogScroll.scrollTop = 0;
+    dom.logDialog.showModal();
   }
 
   function render() {
@@ -1298,6 +1327,7 @@
     renderComposition();
     renderChart();
     renderHistory();
+    if (dom.logDialog.open) renderFullLog();
   }
 
   function updateTodayLabel() {
@@ -2042,13 +2072,15 @@
     dom.importButton.addEventListener("click", () => dom.fileInput.click());
     dom.fileInput.addEventListener("change", handleFileImport);
     dom.historyList.addEventListener("click", handleHistoryClick);
+    dom.fullLogList.addEventListener("click", handleHistoryClick);
+    dom.openFullLogButton.addEventListener("click", openFullLog);
 
     dom.settingsForm
       .querySelectorAll('input[name="unitSystem"]')
       .forEach((radio) => radio.addEventListener("change", handleSettingsUnitChange));
 
     document.addEventListener("click", handleGlobalClick);
-    [dom.entryDialog, dom.settingsDialog, dom.confirmDialog].forEach((dialog) => {
+    [dom.entryDialog, dom.settingsDialog, dom.confirmDialog, dom.logDialog].forEach((dialog) => {
       dialog.addEventListener("click", handleDialogBackdropClick);
     });
 
