@@ -44,6 +44,8 @@
     <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></symbol>
     <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol>
     <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+    <symbol id="i-arrow-up-right" viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></symbol>
+    <symbol id="i-trend" viewBox="0 0 24 24"><path d="m3 17 6-6 4 4 8-9"/><path d="M15 6h6v6"/></symbol>
   </svg>
 
   <header class="topbar">
@@ -140,10 +142,13 @@
         <div class="stat-foot" id="bodyFatDelta">Body fat is optional on each weigh-in.</div>
       </article>
 
-      <article class="stat-card stat-goal">
+      <article class="stat-card stat-goal" id="goalCard">
         <div class="stat-top">
           <span class="stat-label"><svg class="icon" aria-hidden="true"><use href="#i-target"/></svg>Goal</span>
-          <span class="stat-meta" id="goalDate">Not set</span>
+          <span class="stat-top-right">
+            <span class="context-tag" id="goalStatusTag" hidden></span>
+            <span class="stat-meta" id="goalDate">Not set</span>
+          </span>
         </div>
         <div class="stat-value-row">
           <span class="stat-value" id="goalValue">—</span>
@@ -155,6 +160,21 @@
         </div>
         <div class="stat-foot" id="goalFoot"><button class="inline-action" type="button" data-open-settings>Set a target weight <span aria-hidden="true">→</span></button></div>
       </article>
+    </section>
+
+    <section class="momentum-card" id="momentumCard" aria-labelledby="momentumTitle">
+      <div class="momentum-mark" aria-hidden="true">
+        <svg class="icon"><use href="#i-trend"/></svg>
+      </div>
+      <div class="momentum-copy">
+        <p class="section-kicker">Recent momentum</p>
+        <h2 id="momentumTitle">Waiting for more data</h2>
+        <p id="momentumDetail">Log a few weigh-ins and we'll show your average weekly pace.</p>
+      </div>
+      <div class="momentum-side">
+        <span class="status-badge" id="momentumBadge">Not enough data</span>
+        <button class="text-button" id="momentumAction" type="button">Set a goal <span aria-hidden="true">→</span></button>
+      </div>
     </section>
 
     <section class="card chart-card" aria-labelledby="trendHeading">
@@ -204,6 +224,7 @@
         </div>
         <div class="chart-footer">
           <div class="legend" aria-hidden="true">
+            <span class="legend-item" id="trendLegend"><span class="legend-trend"></span>Trend line</span>
             <span class="legend-item"><span class="legend-line"></span>Weekly average</span>
             <span class="legend-item"><span class="legend-dot"></span>Individual weigh-ins</span>
             <span class="legend-item" id="goalLegend"><span class="legend-dash"></span>Goal</span>
@@ -224,34 +245,46 @@
       </div>
 
       <div class="metric-grid">
-        <article class="card metric-card">
+        <article class="card metric-card is-clickable" data-insight="bmi">
           <div class="metric-icon"><svg class="icon" aria-hidden="true"><use href="#i-scale"/></svg></div>
+          <button class="metric-open" type="button" data-insight="bmi" aria-label="View BMI details">
+            <svg class="icon" aria-hidden="true"><use href="#i-arrow-up-right"/></svg>
+          </button>
           <div class="metric-body">
-            <div class="metric-label">BMI</div>
+            <div class="metric-label-row"><div class="metric-label">BMI</div><span class="context-tag" id="bmiTag" hidden></span></div>
             <div class="metric-value-row"><span class="metric-value" id="bmiValue">—</span><span class="metric-unit" id="bmiUnit">kg/m²</span></div>
             <div class="metric-foot" id="bmiFoot">Add your height in settings.</div>
           </div>
         </article>
-        <article class="card metric-card">
+        <article class="card metric-card is-clickable" data-insight="bodyFat">
           <div class="metric-icon"><svg class="icon" aria-hidden="true"><use href="#i-pulse"/></svg></div>
+          <button class="metric-open" type="button" data-insight="bodyFat" aria-label="View body fat details">
+            <svg class="icon" aria-hidden="true"><use href="#i-arrow-up-right"/></svg>
+          </button>
           <div class="metric-body">
-            <div class="metric-label">Body fat</div>
+            <div class="metric-label-row"><div class="metric-label">Body fat</div><span class="context-tag" id="bodyFatTag" hidden></span></div>
             <div class="metric-value-row"><span class="metric-value" id="metricBodyFatValue">—</span><span class="metric-unit">%</span></div>
             <div class="metric-foot" id="metricBodyFatFoot">Log a body fat reading to track it.</div>
           </div>
         </article>
-        <article class="card metric-card">
+        <article class="card metric-card is-clickable" data-insight="lbm">
           <div class="metric-icon"><svg class="icon" aria-hidden="true"><use href="#i-activity"/></svg></div>
+          <button class="metric-open" type="button" data-insight="lbm" aria-label="View lean body mass details">
+            <svg class="icon" aria-hidden="true"><use href="#i-arrow-up-right"/></svg>
+          </button>
           <div class="metric-body">
-            <div class="metric-label">Lean body mass</div>
+            <div class="metric-label-row"><div class="metric-label">Lean body mass</div><span class="context-tag" id="lbmTag" hidden></span></div>
             <div class="metric-value-row"><span class="metric-value" id="lbmValue">—</span><span class="metric-unit" id="lbmUnit">kg</span></div>
             <div class="metric-foot" id="lbmFoot">Requires a body fat reading.</div>
           </div>
         </article>
-        <article class="card metric-card metric-card-ffmi">
+        <article class="card metric-card metric-card-ffmi is-clickable" data-insight="ffmi">
           <div class="metric-icon"><svg class="icon" aria-hidden="true"><use href="#i-target"/></svg></div>
+          <button class="metric-open" type="button" data-insight="ffmi" aria-label="View FFMI details">
+            <svg class="icon" aria-hidden="true"><use href="#i-arrow-up-right"/></svg>
+          </button>
           <div class="metric-body">
-            <div class="metric-label">FFMI</div>
+            <div class="metric-label-row"><div class="metric-label">FFMI</div><span class="context-tag" id="ffmiTag" hidden></span></div>
             <div class="metric-value-row"><span class="metric-value" id="ffmiValue">—</span><span class="metric-unit">kg/m²</span></div>
             <div class="metric-foot" id="ffmiFoot">Fat-free mass index from your latest body fat reading.</div>
           </div>
@@ -292,7 +325,7 @@
 
     <footer class="footer">
       <p><strong>weighline</strong> · Private by design. Your data lives in this browser's local storage.</p>
-      <p>Back up regularly with Export CSV. Weekly averages are calculated Monday through Sunday.</p>
+      <p>Back up regularly with Export CSV. Context ranges are general fitness references, not medical advice.</p>
     </footer>
   </main>
 
@@ -384,7 +417,7 @@
             <input id="heightInput" name="height" type="number" inputmode="decimal" step="0.1" min="1" placeholder="—" autocomplete="off">
             <span class="input-suffix" id="heightUnit">cm</span>
           </span>
-          <span class="field-hint">Used for BMI, lean mass, and FFMI.</span>
+          <span class="field-hint">Used for BMI and FFMI.</span>
           <span class="field-error" id="heightError"></span>
         </label>
         <div class="field settings-note">
@@ -392,6 +425,16 @@
           <p>Everything stays in this browser. Height and body fat are only used to calculate your metrics.</p>
         </div>
       </div>
+
+      <label class="field field-full settings-reference">
+        <span class="field-label">Body composition reference</span>
+        <select id="referenceInput" name="reference">
+          <option value="general">General</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+        </select>
+        <span class="field-hint">Adds context to body fat and FFMI ranges. It never changes your calculations.</span>
+      </label>
 
       <div class="settings-divider">
         <span>Goal</span>
@@ -439,6 +482,140 @@
         </button>
       </div>
     </form>
+  </dialog>
+
+  <dialog class="modal modal-insight" id="insightDialog" aria-labelledby="insightTitle">
+    <div class="insight-content">
+      <div class="modal-header">
+        <div>
+          <p class="section-kicker" id="insightKicker">Context</p>
+          <h2 id="insightTitle">BMI</h2>
+          <p class="modal-copy" id="insightSubtitle"></p>
+        </div>
+        <button class="icon-button modal-close" type="button" data-close aria-label="Close">
+          <svg class="icon" aria-hidden="true"><use href="#i-close"/></svg>
+        </button>
+      </div>
+
+      <div class="insight-summary">
+        <div class="insight-value-row">
+          <span class="insight-value" id="insightValue">—</span>
+          <span class="insight-unit" id="insightUnit"></span>
+        </div>
+        <span class="context-badge" id="insightBadge">Needs data</span>
+      </div>
+      <p class="insight-description" id="insightDescription"></p>
+      <div class="context-range" id="insightRange" hidden></div>
+
+      <div class="insight-trend-card">
+        <div class="insight-trend-head">
+          <div>
+            <p class="section-kicker">Trend</p>
+            <h3>How it's changed</h3>
+          </div>
+          <span id="insightChartMeta"></span>
+        </div>
+        <div class="insight-chart-wrap" id="insightChartWrap">
+          <svg class="insight-chart" id="insightChart" role="img" aria-label="Metric trend chart"></svg>
+          <div class="insight-chart-empty" id="insightChartEmpty" hidden></div>
+        </div>
+      </div>
+
+      <div class="insight-facts" id="insightFacts"></div>
+      <p class="insight-footnote" id="insightFootnote"></p>
+
+      <div class="modal-footer">
+        <span class="footer-spacer"></span>
+        <button class="button button-secondary" type="button" data-close>Close</button>
+        <button class="button button-primary" id="insightSettingsButton" type="button">
+          <svg class="icon" aria-hidden="true"><use href="#i-settings"/></svg>
+          Edit profile
+        </button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog class="modal modal-insight modal-goal-detail" id="goalDetailDialog" aria-labelledby="goalDetailTitle">
+    <div class="insight-content">
+      <div class="modal-header">
+        <div>
+          <p class="section-kicker">Goal details</p>
+          <h2 id="goalDetailTitle">Your goal, in context</h2>
+          <p class="modal-copy" id="goalDetailSubtitle"></p>
+        </div>
+        <button class="icon-button modal-close" type="button" data-close aria-label="Close">
+          <svg class="icon" aria-hidden="true"><use href="#i-close"/></svg>
+        </button>
+      </div>
+
+      <div class="goal-detail-hero">
+        <div>
+          <span class="goal-detail-label">Target weight</span>
+          <div class="insight-value-row">
+            <span class="insight-value" id="goalDetailTarget">—</span>
+            <span class="insight-unit" id="goalDetailUnit">kg</span>
+          </div>
+          <p class="goal-detail-meta" id="goalDetailTargetMeta"></p>
+        </div>
+        <span class="status-badge" id="goalDetailBadge">On track</span>
+      </div>
+
+      <p class="insight-description" id="goalDetailSummary"></p>
+
+      <div class="pace-card">
+        <div class="pace-head">
+          <div>
+            <span class="pace-label">Goal pace</span>
+            <strong id="goalRequiredPace">—</strong>
+          </div>
+          <div>
+            <span class="pace-label">Recent pace</span>
+            <strong id="goalRecentPace">—</strong>
+          </div>
+        </div>
+        <div class="pace-meter" id="goalPaceMeter"></div>
+        <p class="pace-context" id="goalPaceContext"></p>
+      </div>
+
+      <div class="goal-projections">
+        <div class="goal-projections-head">
+          <div>
+            <p class="section-kicker">Projection</p>
+            <h3>If you reach your goal weight</h3>
+          </div>
+          <span id="goalProjectionNote"></span>
+        </div>
+        <div class="projection-grid">
+          <article class="projection-card">
+            <div class="projection-top"><span>BMI</span><span class="context-tag" id="goalBmiTag" hidden></span></div>
+            <strong class="projection-value" id="goalBmiValue">—</strong>
+            <p id="goalBmiDescription"></p>
+          </article>
+          <article class="projection-card">
+            <div class="projection-top"><span>Body fat</span><span class="context-tag" id="goalBfTag" hidden></span></div>
+            <strong class="projection-value" id="goalBfValue">—</strong>
+            <p id="goalBfDescription"></p>
+          </article>
+          <article class="projection-card">
+            <div class="projection-top"><span>FFMI</span><span class="context-tag" id="goalFfmiTag" hidden></span></div>
+            <strong class="projection-value" id="goalFfmiValue">—</strong>
+            <p id="goalFfmiDescription"></p>
+          </article>
+        </div>
+      </div>
+
+      <div class="goal-forecast" id="goalForecast"></div>
+      <div class="goal-detail-facts" id="goalDetailFacts"></div>
+
+      <div class="modal-footer">
+        <span class="footer-spacer"></span>
+        <button class="button button-secondary" type="button" data-close>Close</button>
+        <button class="button button-primary" id="goalEditButton" type="button">
+          <svg class="icon" aria-hidden="true"><use href="#i-target"/></svg>
+          Edit goal
+        </button>
+      </div>
+    </div>
   </dialog>
 
   <dialog class="modal modal-confirm" id="confirmDialog" aria-labelledby="confirmTitle">

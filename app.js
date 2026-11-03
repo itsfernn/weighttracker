@@ -28,13 +28,19 @@
     bodyFatDate: document.getElementById("bodyFatDate"),
     bodyFatValue: document.getElementById("bodyFatValue"),
     bodyFatDelta: document.getElementById("bodyFatDelta"),
+    goalCard: document.getElementById("goalCard"),
     goalDate: document.getElementById("goalDate"),
+    goalStatusTag: document.getElementById("goalStatusTag"),
     goalValue: document.getElementById("goalValue"),
     goalUnit: document.getElementById("goalUnit"),
     goalProgressWrap: document.getElementById("goalProgressWrap"),
     goalProgressBar: document.getElementById("goalProgressBar"),
     goalProgressLabel: document.getElementById("goalProgressLabel"),
     goalFoot: document.getElementById("goalFoot"),
+    momentumTitle: document.getElementById("momentumTitle"),
+    momentumDetail: document.getElementById("momentumDetail"),
+    momentumBadge: document.getElementById("momentumBadge"),
+    momentumAction: document.getElementById("momentumAction"),
     chartSubtitle: document.getElementById("chartSubtitle"),
     chartStage: document.getElementById("chartStage"),
     chartSvg: document.getElementById("chartSvg"),
@@ -44,16 +50,21 @@
     chartEmptyCopy: document.getElementById("chartEmptyCopy"),
     chartInsight: document.getElementById("chartInsight"),
     goalLegend: document.getElementById("goalLegend"),
+    trendLegend: document.getElementById("trendLegend"),
     compositionSubtitle: document.getElementById("compositionSubtitle"),
     bmiValue: document.getElementById("bmiValue"),
     bmiFoot: document.getElementById("bmiFoot"),
+    bmiTag: document.getElementById("bmiTag"),
     metricBodyFatValue: document.getElementById("metricBodyFatValue"),
     metricBodyFatFoot: document.getElementById("metricBodyFatFoot"),
+    bodyFatTag: document.getElementById("bodyFatTag"),
     lbmValue: document.getElementById("lbmValue"),
     lbmUnit: document.getElementById("lbmUnit"),
     lbmFoot: document.getElementById("lbmFoot"),
+    lbmTag: document.getElementById("lbmTag"),
     ffmiValue: document.getElementById("ffmiValue"),
     ffmiFoot: document.getElementById("ffmiFoot"),
+    ffmiTag: document.getElementById("ffmiTag"),
     historyHeading: document.getElementById("historyHeading"),
     historySubtitle: document.getElementById("historySubtitle"),
     historyList: document.getElementById("historyList"),
@@ -82,6 +93,7 @@
     heightInput: document.getElementById("heightInput"),
     heightUnit: document.getElementById("heightUnit"),
     heightError: document.getElementById("heightError"),
+    referenceInput: document.getElementById("referenceInput"),
     goalWeightInput: document.getElementById("goalWeightInput"),
     goalWeightUnit: document.getElementById("goalWeightUnit"),
     goalWeightError: document.getElementById("goalWeightError"),
@@ -89,6 +101,46 @@
     goalBodyFatError: document.getElementById("goalBodyFatError"),
     goalDateInput: document.getElementById("goalDateInput"),
     resetButton: document.getElementById("resetButton"),
+    insightDialog: document.getElementById("insightDialog"),
+    insightKicker: document.getElementById("insightKicker"),
+    insightTitle: document.getElementById("insightTitle"),
+    insightSubtitle: document.getElementById("insightSubtitle"),
+    insightValue: document.getElementById("insightValue"),
+    insightUnit: document.getElementById("insightUnit"),
+    insightBadge: document.getElementById("insightBadge"),
+    insightDescription: document.getElementById("insightDescription"),
+    insightRange: document.getElementById("insightRange"),
+    insightChartWrap: document.getElementById("insightChartWrap"),
+    insightChart: document.getElementById("insightChart"),
+    insightChartEmpty: document.getElementById("insightChartEmpty"),
+    insightChartMeta: document.getElementById("insightChartMeta"),
+    insightFacts: document.getElementById("insightFacts"),
+    insightFootnote: document.getElementById("insightFootnote"),
+    insightSettingsButton: document.getElementById("insightSettingsButton"),
+    goalDetailDialog: document.getElementById("goalDetailDialog"),
+    goalDetailSubtitle: document.getElementById("goalDetailSubtitle"),
+    goalDetailTarget: document.getElementById("goalDetailTarget"),
+    goalDetailUnit: document.getElementById("goalDetailUnit"),
+    goalDetailTargetMeta: document.getElementById("goalDetailTargetMeta"),
+    goalDetailBadge: document.getElementById("goalDetailBadge"),
+    goalDetailSummary: document.getElementById("goalDetailSummary"),
+    goalRequiredPace: document.getElementById("goalRequiredPace"),
+    goalRecentPace: document.getElementById("goalRecentPace"),
+    goalPaceMeter: document.getElementById("goalPaceMeter"),
+    goalPaceContext: document.getElementById("goalPaceContext"),
+    goalProjectionNote: document.getElementById("goalProjectionNote"),
+    goalBmiValue: document.getElementById("goalBmiValue"),
+    goalBmiTag: document.getElementById("goalBmiTag"),
+    goalBmiDescription: document.getElementById("goalBmiDescription"),
+    goalBfValue: document.getElementById("goalBfValue"),
+    goalBfTag: document.getElementById("goalBfTag"),
+    goalBfDescription: document.getElementById("goalBfDescription"),
+    goalFfmiValue: document.getElementById("goalFfmiValue"),
+    goalFfmiTag: document.getElementById("goalFfmiTag"),
+    goalFfmiDescription: document.getElementById("goalFfmiDescription"),
+    goalForecast: document.getElementById("goalForecast"),
+    goalDetailFacts: document.getElementById("goalDetailFacts"),
+    goalEditButton: document.getElementById("goalEditButton"),
     confirmDialog: document.getElementById("confirmDialog"),
     confirmForm: document.getElementById("confirmForm"),
     confirmTitle: document.getElementById("confirmTitle"),
@@ -103,6 +155,7 @@
     editingId: null,
     settingsUnit: "metric",
     settingsCanonical: { heightCm: null, goalWeightKg: null },
+    currentInsight: null,
     pendingConfirm: null,
   };
 
@@ -110,7 +163,7 @@
     return {
       version: 1,
       unitSystem: "metric",
-      profile: { heightCm: null },
+      profile: { heightCm: null, reference: "general" },
       entries: [],
       goal: { weightKg: null, bodyFatPct: null, date: null },
     };
@@ -128,6 +181,9 @@
     base.unitSystem = input.unitSystem === "imperial" ? "imperial" : "metric";
     const height = Number(input.profile?.heightCm);
     base.profile.heightCm = Number.isFinite(height) && height > 0 ? height : null;
+    base.profile.reference = ["male", "female"].includes(input.profile?.reference)
+      ? input.profile.reference
+      : "general";
 
     const goal = input.goal || {};
     const goalWeight = Number(goal.weightKg);
@@ -464,12 +520,440 @@
     };
   }
 
-  function bmiLabel(bmi) {
-    if (bmi < 18.5) return "Below the healthy range";
-    if (bmi < 25) return "Within the healthy range";
-    if (bmi < 30) return "Above the healthy range";
-    return "Well above the healthy range";
+  const REFERENCE_LABELS = {
+    general: "General",
+    male: "Male",
+    female: "Female",
+  };
+
+  function referenceGroup() {
+    return REFERENCE_LABELS[state.profile.reference] ? state.profile.reference : "general";
   }
+
+  function getBmiContext(value) {
+    const bands = [
+      { min: 12, max: 18.5, label: "Below range", short: "Below", tone: "cool" },
+      { min: 18.5, max: 25, label: "Healthy range", short: "Healthy", tone: "good" },
+      { min: 25, max: 30, label: "Above range", short: "Above", tone: "warm" },
+      { min: 30, max: 45, label: "High range", short: "High", tone: "hot" },
+    ];
+    const band =
+      bands.find((candidate) => value >= candidate.min && value < candidate.max) ||
+      (value < bands[0].min ? bands[0] : bands.at(-1));
+    const descriptions = {
+      "Below range":
+        "Below the commonly cited healthy BMI range of 18.5–24.9. BMI is a broad population screen, not a diagnosis.",
+      "Healthy range":
+        "Inside the commonly cited healthy range of 18.5–24.9. BMI is still only a broad screen and doesn't distinguish muscle from fat.",
+      "Above range":
+        "Above the commonly cited healthy range of 18.5–24.9. Your FFMI, body fat, and trend can add useful context.",
+      "High range":
+        "At or above 30, which is a broad signal to look at the whole picture rather than a verdict on your health.",
+    };
+    return {
+      ...band,
+      value,
+      min: 12,
+      max: 45,
+      bands,
+      description: descriptions[band.label],
+      format: (number) => formatNumber(number, 1),
+    };
+  }
+
+  function getBodyFatReference(type) {
+    if (type === "female") {
+      return {
+        label: "Female reference",
+        min: 0,
+        max: 50,
+        bands: [
+          { min: 0, max: 14, label: "Very lean", tone: "cool" },
+          { min: 14, max: 21, label: "Athletic", tone: "good" },
+          { min: 21, max: 25, label: "Fitness", tone: "good" },
+          { min: 25, max: 32, label: "Average", tone: "neutral" },
+          { min: 32, max: 50, label: "Above average", tone: "warm" },
+        ],
+      };
+    }
+    return {
+      label: "Male reference",
+      min: 0,
+      max: 50,
+      bands: [
+        { min: 0, max: 6, label: "Very lean", tone: "cool" },
+        { min: 6, max: 14, label: "Athletic", tone: "good" },
+        { min: 14, max: 18, label: "Fitness", tone: "good" },
+        { min: 18, max: 25, label: "Average", tone: "neutral" },
+        { min: 25, max: 50, label: "Above average", tone: "warm" },
+      ],
+    };
+  }
+
+  function getBodyFatContext(value) {
+    const reference = referenceGroup();
+    const descriptions = {
+      "Very lean":
+        "A very low body fat level. Essential fat supports health, and very lean ranges can be hard to sustain.",
+      Athletic:
+        "Athletic range for this reference group. This is common in people who train consistently.",
+      Fitness:
+        "Fitness range for this reference group, typically associated with regular activity and training.",
+      Average:
+        "Average range for this reference group. Trends and how you feel matter more than a single reading.",
+      "Above average":
+        "Above the typical range for this reference group. The broader health picture and your trend matter more than one number.",
+    };
+
+    if (reference === "general") {
+      return {
+        label: "Reference varies",
+        tone: "neutral",
+        description:
+          "Body fat ranges are sex-specific. Set a body composition reference in your profile, or compare the male and female ranges below.",
+        value,
+        references: {
+          male: buildBodyFatReferenceContext("male", value, descriptions),
+          female: buildBodyFatReferenceContext("female", value, descriptions),
+        },
+        format: (number) => `${formatNumber(number, 1)}%`,
+      };
+    }
+
+    const config = getBodyFatReference(reference);
+    const band =
+      config.bands.find((candidate) => value >= candidate.min && value < candidate.max) ||
+      (value < config.bands[0].min ? config.bands[0] : config.bands.at(-1));
+    return {
+      ...config,
+      ...band,
+      band,
+      description: descriptions[band.label],
+      value,
+      references: null,
+      format: (number) => `${formatNumber(number, 1)}%`,
+    };
+  }
+
+  function buildBodyFatReferenceContext(type, value, descriptions) {
+    const config = getBodyFatReference(type);
+    const band =
+      config.bands.find((candidate) => value >= candidate.min && value < candidate.max) ||
+      (value < config.bands[0].min ? config.bands[0] : config.bands.at(-1));
+    return {
+      ...config,
+      band,
+      description: descriptions[band.label],
+      value,
+      format: (number) => `${formatNumber(number, 1)}%`,
+    };
+  }
+
+  function getFfmiContext(value) {
+    const reference = referenceGroup();
+    const female = reference === "female";
+    const thresholds = female ? [15, 17, 19, 21, 23] : [18, 20, 22, 24, 26];
+    const labels = [
+      { label: "Below average", tone: "cool" },
+      { label: "Average", tone: "neutral" },
+      { label: "Above average", tone: "good" },
+      { label: "Athletic", tone: "good" },
+      { label: "Very muscular", tone: "good" },
+      { label: "Exceptional", tone: "warm" },
+    ];
+    const descriptions = {
+      "Below average":
+        "Below the typical benchmark for this reference. More muscle mass or body weight can raise FFMI.",
+      Average: "Around the typical adult benchmark for this reference.",
+      "Above average":
+        "Above average; often seen in people who strength train regularly.",
+      Athletic:
+        "Athletic range. Commonly associated with a visibly muscular, trained physique.",
+      "Very muscular":
+        "Very muscular range, usually the result of years of consistent training.",
+      Exceptional:
+        "Exceptional and uncommon. Genetics, training history, and measurement error all matter at this level.",
+    };
+    const min = female ? 12 : 14;
+    const max = female ? 30 : 32;
+    const bands = thresholds.map((threshold, index) => ({
+      min: index === 0 ? min : thresholds[index - 1],
+      max: threshold,
+      label: labels[index].label,
+      tone: labels[index].tone,
+    }));
+    bands.push({
+      min: thresholds.at(-1),
+      max,
+      label: labels.at(-1).label,
+      tone: labels.at(-1).tone,
+    });
+    const band =
+      bands.find((candidate) => value >= candidate.min && value < candidate.max) ||
+      (value < bands[0].min ? bands[0] : bands.at(-1));
+    return {
+      ...band,
+      value,
+      min,
+      max,
+      bands,
+      reference,
+      description: descriptions[band.label],
+      format: (number) => formatNumber(number, 1),
+    };
+  }
+
+  function setContextTag(element, context) {
+    if (!element) return;
+    if (!context) {
+      element.hidden = true;
+      return;
+    }
+    element.hidden = false;
+    element.textContent = context.label;
+    element.className = `context-tag tone-${context.tone}`;
+  }
+
+  function setStatusBadge(element, label, tone) {
+    if (!element) return;
+    element.hidden = false;
+    element.textContent = label;
+    element.className = `status-badge tone-${tone}`;
+  }
+
+  function linearRegression(points) {
+    if (points.length < 2) return null;
+    const xMean = points.reduce((sum, point) => sum + point.x, 0) / points.length;
+    const yMean = points.reduce((sum, point) => sum + point.y, 0) / points.length;
+    let numerator = 0;
+    let denominator = 0;
+    points.forEach((point) => {
+      numerator += (point.x - xMean) * (point.y - yMean);
+      denominator += (point.x - xMean) ** 2;
+    });
+    if (denominator === 0) return null;
+    const slope = numerator / denominator;
+    return { slope, intercept: yMean - slope * xMean };
+  }
+
+  function getRecentPace(days = 28) {
+    const cutoff = Date.now() - days * DAY_MS;
+    const samples = state.entries
+      .filter((entry) => new Date(entry.at).getTime() >= cutoff)
+      .map((entry) => ({
+        x: new Date(entry.at).getTime() / DAY_MS,
+        y: entry.weightKg,
+        at: new Date(entry.at),
+      }));
+    if (samples.length < 2) return null;
+    const spanDays = samples.at(-1).x - samples[0].x;
+    if (spanDays < 4) return null;
+    const fit = linearRegression(samples);
+    if (!fit) return null;
+    const kgPerWeek = fit.slope * 7;
+    const latestWeight = samples.at(-1).y;
+    if (!Number.isFinite(kgPerWeek) || !Number.isFinite(latestWeight) || latestWeight <= 0) {
+      return null;
+    }
+    return {
+      kgPerWeek,
+      percentPerWeek: (kgPerWeek / latestWeight) * 100,
+      samples: samples.length,
+      spanDays,
+      direction: Math.abs(kgPerWeek) < 0.01 ? "steady" : kgPerWeek > 0 ? "gain" : "loss",
+      start: samples[0].at,
+      end: samples.at(-1).at,
+    };
+  }
+
+  function classifyPace(percentPerWeek, direction) {
+    const percent = Math.abs(percentPerWeek);
+    if (direction === "loss") {
+      if (percent < 0.25) {
+        return {
+          label: "Gentle",
+          tone: "cool",
+          description: "Under 0.25% of body weight per week is a slow, gentle loss pace.",
+        };
+      }
+      if (percent <= 1) {
+        return {
+          label: "Sustainable",
+          tone: "good",
+          description:
+            "0.25–1% of body weight per week is commonly considered a sustainable loss range.",
+        };
+      }
+      return {
+        label: "Aggressive",
+        tone: "warm",
+        description:
+          "Above 1% of body weight per week is a fast loss pace. Make sure it feels sustainable for you.",
+      };
+    }
+    if (direction === "gain") {
+      if (percent < 0.1) {
+        return {
+          label: "Gentle",
+          tone: "cool",
+          description: "Under 0.1% of body weight per week is a slow, gradual gain pace.",
+        };
+      }
+      if (percent <= 0.5) {
+        return {
+          label: "Steady",
+          tone: "good",
+          description:
+            "0.1–0.5% of body weight per week is a controlled gain range for most people.",
+        };
+      }
+      return {
+        label: "Fast",
+        tone: "warm",
+        description:
+          "Above 0.5% of body weight per week is a fast gain pace and may include more fat gain.",
+      };
+    }
+    return {
+      label: "Steady",
+      tone: "neutral",
+      description: "Your recent trend is close to flat.",
+    };
+  }
+
+  function getGoalContext() {
+    if (state.goal.weightKg === null) return null;
+    const metrics = calculateMetrics();
+    const latest = metrics.latest;
+    if (!latest) {
+      return {
+        goal: state.goal,
+        latest: null,
+        targetWeight: state.goal.weightKg,
+        targetBodyFat: state.goal.bodyFatPct,
+        date: parseDateOnly(state.goal.date),
+        daysLeft: null,
+        reached: false,
+        requiredPace: null,
+        requiredPercent: null,
+        requiredClass: null,
+        recentPace: null,
+        actualClass: null,
+        status: { label: "Need data", tone: "neutral", key: "unknown" },
+        direction: state.goal.weightKg >= 0 ? "gain" : "loss",
+        projectedDate: null,
+      };
+    }
+
+    const current = latest.weightKg;
+    const start = state.entries[0].weightKg;
+    const target = state.goal.weightKg;
+    const progress = getGoalProgress(current, start, target);
+    const date = parseDateOnly(state.goal.date);
+    const daysLeft = date
+      ? Math.ceil((date.getTime() - Date.now()) / DAY_MS)
+      : null;
+    const direction =
+      Math.abs(target - current) < 0.05 ? "steady" : target > current ? "gain" : "loss";
+    const requiredPace =
+      date && daysLeft > 0 ? (target - current) / (daysLeft / 7) : null;
+    const requiredPercent =
+      requiredPace !== null && current > 0 ? (requiredPace / current) * 100 : null;
+    const requiredClass =
+      requiredPace !== null && direction !== "steady"
+        ? classifyPace(requiredPercent, direction)
+        : null;
+    const recentPace = getRecentPace();
+    const actualClass = recentPace
+      ? classifyPace(recentPace.percentPerWeek, recentPace.direction)
+      : null;
+
+    let projectedDate = null;
+    if (
+      recentPace &&
+      !progress.reached &&
+      direction !== "steady" &&
+      Math.sign(recentPace.kgPerWeek) === Math.sign(target - current) &&
+      Math.abs(recentPace.kgPerWeek) > 0.005
+    ) {
+      const weeks = Math.abs(target - current) / Math.abs(recentPace.kgPerWeek);
+      projectedDate = new Date(Date.now() + weeks * 7 * DAY_MS);
+    }
+
+    let status;
+    if (progress.reached) {
+      status = { label: "Goal reached", tone: "good", key: "reached" };
+    } else if (!recentPace) {
+      status = { label: "Need data", tone: "neutral", key: "unknown" };
+    } else if (!date) {
+      status = {
+        label: actualClass?.label || "Tracking",
+        tone: actualClass?.tone || "neutral",
+        key: "pace",
+      };
+    } else if (daysLeft <= 0) {
+      status = { label: "Date passed", tone: "warm", key: "overdue" };
+    } else if (direction === "steady") {
+      status = { label: "Maintaining", tone: "good", key: "maintain" };
+    } else {
+      const directionMatches =
+        Math.sign(recentPace.kgPerWeek) === Math.sign(requiredPace);
+      if (!directionMatches || Math.abs(recentPace.kgPerWeek) < 0.01) {
+        status = { label: "Off track", tone: "hot", key: "off-track" };
+      } else if (projectedDate) {
+        const dayDifference = (projectedDate.getTime() - date.getTime()) / DAY_MS;
+        if (dayDifference > 7) {
+          status = { label: "Speed up", tone: "warm", key: "behind" };
+        } else if (dayDifference < -14 && ["Aggressive", "Fast"].includes(actualClass?.label)) {
+          status = { label: "Slow down", tone: "warm", key: "too-fast" };
+        } else if (dayDifference < -7) {
+          status = { label: "Ahead of pace", tone: "good", key: "ahead" };
+        } else {
+          status = { label: "On track", tone: "good", key: "on-track" };
+        }
+      } else {
+        const ratio = recentPace.kgPerWeek / requiredPace;
+        if (ratio < 0.75) {
+          status = { label: "Speed up", tone: "warm", key: "behind" };
+        } else if (ratio > 1.75) {
+          const tooFast = ["Aggressive", "Fast"].includes(actualClass?.label);
+          status = tooFast
+            ? { label: "Slow down", tone: "warm", key: "too-fast" }
+            : { label: "Ahead of pace", tone: "good", key: "ahead" };
+        } else {
+          status = { label: "On track", tone: "good", key: "on-track" };
+        }
+      }
+    }
+
+    return {
+      goal: state.goal,
+      latest,
+      current,
+      start,
+      targetWeight: target,
+      targetBodyFat: state.goal.bodyFatPct,
+      date,
+      daysLeft,
+      reached: progress.reached,
+      progress: progress.progress,
+      direction,
+      requiredPace,
+      requiredPercent,
+      requiredClass,
+      recentPace,
+      actualClass,
+      status,
+      projectedDate,
+    };
+  }
+
+  function formatPaceValue(kgPerWeek) {
+    const display = Math.abs(toDisplayWeight(kgPerWeek));
+    return formatNumber(display, display < 0.1 ? 2 : 1);
+  }
+
+
 
   function trendMarkup(delta, unit, suffix) {
     if (Math.abs(delta) < 0.05) {
@@ -577,6 +1061,7 @@
     }
 
     if (state.goal.weightKg !== null) {
+      const goalContext = getGoalContext();
       dom.goalValue.textContent = formatNumber(toDisplayWeight(state.goal.weightKg), 1);
       const metaParts = [];
       if (state.goal.date) metaParts.push(formatGoalDate(state.goal.date));
@@ -584,47 +1069,40 @@
         metaParts.push(`${formatNumber(state.goal.bodyFatPct, 1)}% BF`);
       }
       dom.goalDate.textContent = metaParts.length ? metaParts.join(" · ") : "No deadline";
+      setContextTag(dom.goalStatusTag, goalContext.status);
+      dom.goalCard.classList.add("has-goal");
 
       if (latest) {
-        const start = state.entries[0];
-        const goal = getGoalProgress(
-          latest.weightKg,
-          start.weightKg,
-          state.goal.weightKg,
-        );
-        const progressPercent = Math.round(goal.progress * 100);
+        const progressPercent = Math.round(goalContext.progress * 100);
         dom.goalProgressWrap.hidden = false;
         dom.goalProgressBar.style.width = `${progressPercent}%`;
         dom.goalProgressLabel.textContent = `${progressPercent}%`;
 
-        if (goal.reached) {
+        let copy;
+        if (goalContext.reached) {
           dom.goalProgressLabel.textContent = "100%";
-          dom.goalFoot.textContent = "Goal reached. Nicely done.";
+          copy = "Goal reached. Nicely done.";
         } else {
           const remaining = Math.abs(latest.weightKg - state.goal.weightKg);
-          let copy = `${formatNumber(toDisplayWeight(remaining), 1)} ${unit} to go`;
-          if (state.goal.date) {
-            const targetDate = parseDateOnly(state.goal.date);
-            const daysLeft = targetDate
-              ? Math.ceil((targetDate.getTime() - new Date().getTime()) / DAY_MS)
-              : null;
-            if (daysLeft !== null && daysLeft > 0) {
-              const weeksLeft = daysLeft / 7;
-              const pace = toDisplayWeight(remaining) / weeksLeft;
-              copy += ` · ${formatNumber(pace, 1)} ${unit}/wk needed`;
-            } else if (daysLeft !== null) {
-              copy += " · target date passed";
-            }
+          copy = `${formatNumber(toDisplayWeight(remaining), 1)} ${unit} to go`;
+          if (goalContext.requiredPace !== null) {
+            copy += ` · ${formatPaceValue(goalContext.requiredPace)} ${unit}/wk (${goalContext.requiredClass?.label?.toLowerCase() || "target pace"})`;
+          } else if (goalContext.daysLeft !== null && goalContext.daysLeft <= 0) {
+            copy += " · target date passed";
           }
-          dom.goalFoot.textContent = copy;
         }
+        dom.goalFoot.innerHTML = `<span>${copy}</span> <button class="inline-action goal-detail-link" type="button" data-goal-detail>Details <span aria-hidden="true">→</span></button>`;
       } else {
         dom.goalProgressWrap.hidden = true;
-        dom.goalFoot.textContent = "Log a weigh-in to start tracking progress.";
+        dom.goalStatusTag.hidden = true;
+        dom.goalFoot.innerHTML =
+          '<span>Log a weigh-in to start tracking progress.</span> <button class="inline-action goal-detail-link" type="button" data-goal-detail>Details <span aria-hidden="true">→</span></button>';
       }
     } else {
       dom.goalValue.textContent = "—";
       dom.goalDate.textContent = "Not set";
+      dom.goalStatusTag.hidden = true;
+      dom.goalCard.classList.remove("has-goal");
       dom.goalProgressWrap.hidden = true;
       dom.goalFoot.innerHTML =
         '<button class="inline-action" type="button" data-open-settings>Set a target weight <span aria-hidden="true">→</span></button>';
@@ -634,29 +1112,38 @@
   function renderComposition() {
     const metrics = calculateMetrics();
     const unit = weightUnit();
-    const heightLabel = state.profile.heightCm
-      ? `${formatHeight(state.profile.heightCm)} ${heightUnit()}`
-      : null;
-
     dom.lbmUnit.textContent = unit;
     dom.compositionSubtitle.textContent = state.profile.heightCm
-      ? "Calculated from your latest weigh-ins and profile."
+      ? "Calculated from your latest weigh-ins. Select a metric for context and history."
       : "Add your height to unlock BMI, lean mass, and FFMI.";
 
     if (metrics.bmi !== null) {
+      const context = getBmiContext(metrics.bmi);
       dom.bmiValue.textContent = formatNumber(metrics.bmi, 1);
-      dom.bmiFoot.textContent = `${bmiLabel(metrics.bmi)}${heightLabel ? ` · ${heightLabel}` : ""}`;
+      setContextTag(dom.bmiTag, context);
+      const healthyLow = toDisplayWeight(18.5 * (metrics.heightCm / 100) ** 2);
+      const healthyHigh = toDisplayWeight(24.9 * (metrics.heightCm / 100) ** 2);
+      dom.bmiFoot.textContent = `Healthy weight ${formatNumber(healthyLow, 1)}–${formatNumber(healthyHigh, 1)} ${unit}`;
     } else if (metrics.latest && !state.profile.heightCm) {
       dom.bmiValue.textContent = "—";
+      setContextTag(dom.bmiTag, null);
       dom.bmiFoot.innerHTML =
         '<button class="inline-action" type="button" data-open-settings>Add your height <span aria-hidden="true">→</span></button>';
     } else {
       dom.bmiValue.textContent = "—";
+      setContextTag(dom.bmiTag, null);
       dom.bmiFoot.textContent = "Log a weigh-in to calculate your BMI.";
     }
 
     if (metrics.bodyFatPct !== null) {
+      const context = getBodyFatContext(metrics.bodyFatPct);
       dom.metricBodyFatValue.textContent = formatNumber(metrics.bodyFatPct, 1);
+      setContextTag(
+        dom.bodyFatTag,
+        referenceGroup() === "general"
+          ? { label: "Ranges vary", tone: "neutral" }
+          : context,
+      );
       if (state.goal.bodyFatPct !== null) {
         const difference = metrics.bodyFatPct - state.goal.bodyFatPct;
         dom.metricBodyFatFoot.textContent =
@@ -668,28 +1155,40 @@
       }
     } else {
       dom.metricBodyFatValue.textContent = "—";
+      setContextTag(dom.bodyFatTag, null);
       dom.metricBodyFatFoot.textContent = "Add body fat to any weigh-in to track it.";
     }
 
     if (metrics.leanMassKg !== null) {
+      const leanShare =
+        (metrics.leanMassKg / metrics.latestBodyFat.weightKg) * 100;
       dom.lbmValue.textContent = formatNumber(toDisplayWeight(metrics.leanMassKg), 1);
+      setContextTag(dom.lbmTag, {
+        label: `${formatNumber(leanShare, 0)}% lean`,
+        tone: "neutral",
+      });
       dom.lbmFoot.textContent = metrics.fatMassKg !== null
         ? `Fat mass ${formatNumber(toDisplayWeight(metrics.fatMassKg), 1)} ${unit}`
         : "Calculated from your latest body fat reading.";
     } else {
       dom.lbmValue.textContent = "—";
+      setContextTag(dom.lbmTag, null);
       dom.lbmFoot.textContent = "Requires a body fat reading.";
     }
 
     if (metrics.ffmi !== null) {
+      const context = getFfmiContext(metrics.ffmi);
       dom.ffmiValue.textContent = formatNumber(metrics.ffmi, 1);
+      setContextTag(dom.ffmiTag, context);
       dom.ffmiFoot.textContent = `Normalized ${formatNumber(metrics.normalizedFfmi, 1)} · from your latest body fat reading`;
     } else if (!state.profile.heightCm && metrics.bodyFatPct !== null) {
       dom.ffmiValue.textContent = "—";
+      setContextTag(dom.ffmiTag, null);
       dom.ffmiFoot.innerHTML =
         '<button class="inline-action" type="button" data-open-settings>Add your height <span aria-hidden="true">→</span></button>';
     } else {
       dom.ffmiValue.textContent = "—";
+      setContextTag(dom.ffmiTag, null);
       dom.ffmiFoot.textContent = "Requires body fat and height.";
     }
   }
@@ -698,6 +1197,971 @@
     const shouldShow = state.entries.length > 0 && !state.profile.heightCm;
     dom.profileNudge.hidden = !shouldShow;
     dom.introSetupLabel.textContent = state.profile.heightCm ? "Edit profile" : "Set up profile";
+  }
+
+  function buildRangeTrack(context, value) {
+    const width = context.max - context.min;
+    const segments = context.bands
+      .map((band) => {
+        const bandWidth = ((band.max - band.min) / width) * 100;
+        return `<span class="range-segment tone-${band.tone}" style="width:${bandWidth.toFixed(2)}%" title="${escapeHtml(`${band.label}: ${context.format(band.min)}–${context.format(band.max)}`)}"></span>`;
+      })
+      .join("");
+    const marker = clamp(((value - context.min) / width) * 100, 0, 100);
+    return `<div class="range-track"><div class="range-track-inner">${segments}</div><span class="range-marker" style="left:${marker.toFixed(2)}%"></span></div>`;
+  }
+
+  function buildRangeLegend(context) {
+    return `<div class="range-legend">${context.bands
+      .map(
+        (band) =>
+          `<span class="range-legend-item"><span class="range-dot tone-${band.tone}"></span>${escapeHtml(band.label)} <span class="range-numbers">${context.format(band.min)}–${context.format(band.max)}</span></span>`,
+      )
+      .join("")}</div>`;
+  }
+
+  function buildSingleRange(context, title) {
+    return `<div class="context-range-head"><span>${escapeHtml(title)}</span><strong>${context.format(context.value)}</strong></div>${buildRangeTrack(context, context.value)}${buildRangeLegend(context)}`;
+  }
+
+  function buildReferenceCompare(context) {
+    const row = (type) => {
+      const reference = context.references[type];
+      return `<div class="reference-row">
+        <div class="reference-row-head"><span>${escapeHtml(reference.label)}</span><strong>${escapeHtml(reference.band.label)}</strong></div>
+        ${buildRangeTrack(reference, context.value)}
+      </div>`;
+    };
+    const colorLegend = `<div class="range-legend"><span class="range-legend-item"><span class="range-dot tone-cool"></span>Very lean</span><span class="range-legend-item"><span class="range-dot tone-good"></span>Athletic / fitness</span><span class="range-legend-item"><span class="range-dot tone-neutral"></span>Average</span><span class="range-legend-item"><span class="range-dot tone-warm"></span>Above average</span></div>`;
+    return `<div class="context-range-head"><span>Male and female references</span><strong>${context.format(context.value)}</strong></div><div class="reference-compare">${row("male")}${row("female")}</div>${colorLegend}`;
+  }
+
+  function buildCompositionRange(metrics) {
+    if (metrics.leanMassKg === null || metrics.bodyFatPct === null) return "";
+    const leanPercent = 100 - metrics.bodyFatPct;
+    const fatPercent = metrics.bodyFatPct;
+    return `<div class="context-range-head"><span>Your body composition</span><strong>${formatNumber(leanPercent, 0)}% lean</strong></div>
+      <div class="range-track"><div class="range-track-inner">
+        <span class="range-segment tone-good" style="width:${leanPercent.toFixed(1)}%"></span>
+        <span class="range-segment tone-warm" style="width:${fatPercent.toFixed(1)}%"></span>
+      </div></div>
+      <div class="range-legend">
+        <span class="range-legend-item"><span class="range-dot tone-good"></span>Lean ${formatNumber(toDisplayWeight(metrics.leanMassKg), 1)} ${weightUnit()}</span>
+        <span class="range-legend-item"><span class="range-dot tone-warm"></span>Fat ${formatNumber(toDisplayWeight(metrics.fatMassKg), 1)} ${weightUnit()}</span>
+      </div>`;
+  }
+
+  function buildFactsHtml(facts) {
+    return facts
+      .map(
+        (fact) =>
+          `<div class="insight-fact"><span>${escapeHtml(fact.label)}</span><strong>${escapeHtml(fact.value)}</strong>${fact.hint ? `<em>${escapeHtml(fact.hint)}</em>` : ""}</div>`,
+      )
+      .join("");
+  }
+
+  function buildSeriesMeta(series, data) {
+    if (!series.length) return "No readings yet";
+    if (series.length === 1) return "1 reading";
+    const first = series[0];
+    const last = series.at(-1);
+    const delta = last.value - first.value;
+    if (Math.abs(delta) < 0.05) {
+      return `No change since ${formatDateShort(first.at)}`;
+    }
+    const value = `${delta < 0 ? "−" : "+"}${formatNumber(Math.abs(delta), 1)}`;
+    const label =
+      data.metric === "bmi"
+        ? "BMI"
+        : data.metric === "bodyFat"
+          ? "pts"
+          : data.metric === "lbm"
+            ? weightUnit()
+            : "FFMI";
+    return `${value} ${label} since ${formatDateShort(first.at)}`;
+  }
+
+  function buildInsightData(metric) {
+    const metrics = calculateMetrics();
+    const heightM = metrics.heightCm ? metrics.heightCm / 100 : null;
+    const unit = weightUnit();
+    let data;
+
+    if (metric === "bmi") {
+      const series =
+        heightM !== null
+          ? state.entries.map((entry) => ({
+              at: new Date(entry.at),
+              value: entry.weightKg / (heightM * heightM),
+            }))
+          : [];
+      const context = metrics.bmi !== null ? getBmiContext(metrics.bmi) : null;
+      const healthyLow = heightM ? toDisplayWeight(18.5 * heightM * heightM) : null;
+      const healthyHigh = heightM ? toDisplayWeight(24.9 * heightM * heightM) : null;
+      data = {
+        metric,
+        kicker: "Body mass index",
+        title: "BMI",
+        subtitle: "A population-level screen built from your weight and height.",
+        value: metrics.bmi,
+        displayValue: metrics.bmi !== null ? formatNumber(metrics.bmi, 1) : "—",
+        unit: "kg/m²",
+        badge: context
+          ? { label: context.label, tone: context.tone }
+          : state.profile.heightCm
+            ? { label: "Add weigh-in", tone: "neutral" }
+            : { label: "Add height", tone: "neutral" },
+        description: context
+          ? context.description
+          : state.profile.heightCm
+            ? "Log a weigh-in to calculate BMI and start the trend."
+            : "Add your height in the profile settings to calculate BMI and see how it has changed.",
+        rangeMode: context ? "single" : "none",
+        rangeContext: context,
+        rangeTitle: "Common BMI ranges",
+        band: heightM ? { min: 18.5, max: 25, label: "Healthy BMI range" } : null,
+        goal: null,
+        series,
+        facts: metrics.latest
+          ? [
+              {
+                label: "Healthy weight",
+                value:
+                  healthyLow !== null
+                    ? `${formatNumber(healthyLow, 1)}–${formatNumber(healthyHigh, 1)} ${unit}`
+                    : "Add your height",
+                hint: heightM ? `For ${formatHeight(metrics.heightCm)} ${heightUnit()}` : "",
+              },
+              {
+                label: "Current weight",
+                value: `${formatWeight(metrics.latest.weightKg, 1)} ${unit}`,
+                hint: formatDateShort(new Date(metrics.latest.at)),
+              },
+              {
+                label: "Height",
+                value: state.profile.heightCm
+                  ? `${formatHeight(state.profile.heightCm)} ${heightUnit()}`
+                  : "Not set",
+                hint: "",
+              },
+              {
+                label: "Readings",
+                value: pluralize(series.length, "weigh-in"),
+                hint: "BMI uses every weigh-in",
+              },
+            ]
+          : [],
+        footnote:
+          "BMI is a broad screening measure and does not distinguish muscle from fat. Use your trend, FFMI, and body fat for a fuller picture.",
+        emptyCopy: heightM
+          ? "Log a weigh-in to start the BMI trend."
+          : "Add your height and log a weigh-in to start the BMI trend.",
+        chartUnit: "BMI",
+      };
+    } else if (metric === "bodyFat") {
+      const series = state.entries
+        .filter((entry) => entry.bodyFatPct !== null)
+        .map((entry) => ({
+          at: new Date(entry.at),
+          value: entry.bodyFatPct,
+        }));
+      const context = metrics.bodyFatPct !== null ? getBodyFatContext(metrics.bodyFatPct) : null;
+      const reference = referenceGroup();
+      const fitnessBand = context && context.bands
+        ? context.bands.find((band) => band.label === "Fitness")
+        : null;
+      data = {
+        metric,
+        kicker: "Body composition",
+        title: "Body fat",
+        subtitle: "An estimate of the share of your weight that comes from fat.",
+        value: metrics.bodyFatPct,
+        displayValue: metrics.bodyFatPct !== null ? formatNumber(metrics.bodyFatPct, 1) : "—",
+        unit: "%",
+        badge: context
+          ? reference === "general"
+            ? { label: "Ranges vary", tone: "neutral" }
+            : { label: context.band.label, tone: context.band.tone }
+          : { label: "No readings", tone: "neutral" },
+        description: context
+          ? reference === "general"
+            ? "Body fat ranges are sex-specific. Choose a reference group in your profile, or compare the male and female ranges below."
+            : context.description
+          : "Add a body fat percentage to any weigh-in, then your readings and trends will appear here.",
+        rangeMode: context ? (reference === "general" ? "references" : "single") : "none",
+        rangeContext: context,
+        rangeTitle: "Body fat reference ranges",
+        band: fitnessBand ? { min: fitnessBand.min, max: fitnessBand.max, label: "Fitness reference" } : null,
+        goal: state.goal.bodyFatPct,
+        series,
+        facts: metrics.latestBodyFat
+          ? [
+              {
+                label: "Fat mass",
+                value:
+                  metrics.fatMassKg !== null
+                    ? `${formatNumber(toDisplayWeight(metrics.fatMassKg), 1)} ${unit}`
+                    : "—",
+                hint: "At your latest body fat reading",
+              },
+              {
+                label: "Lean mass",
+                value:
+                  metrics.leanMassKg !== null
+                    ? `${formatNumber(toDisplayWeight(metrics.leanMassKg), 1)} ${unit}`
+                    : "—",
+                hint: "Everything that isn't fat",
+              },
+              {
+                label: "Last measured",
+                value: formatDateShort(new Date(metrics.latestBodyFat.at)),
+                hint: formatTime(new Date(metrics.latestBodyFat.at)),
+              },
+              {
+                label: "Reference",
+                value: REFERENCE_LABELS[reference],
+                hint: reference === "general" ? "Set for tailored ranges" : "Used for context only",
+              },
+            ]
+          : [],
+        footnote:
+          "Body fat estimates vary by measurement method. Trends from the same method are usually more useful than a single reading. Ranges vary by sex and age.",
+        emptyCopy: "Add body fat to a weigh-in to start this trend.",
+        chartUnit: "%",
+      };
+    } else if (metric === "lbm") {
+      const series = state.entries
+        .filter((entry) => entry.bodyFatPct !== null)
+        .map((entry) => ({
+          at: new Date(entry.at),
+          value: toDisplayWeight(entry.weightKg * (1 - entry.bodyFatPct / 100)),
+        }));
+      const ffmiContext = metrics.ffmi !== null ? getFfmiContext(metrics.ffmi) : null;
+      const leanShare =
+        metrics.leanMassKg !== null && metrics.latestBodyFat
+          ? (metrics.leanMassKg / metrics.latestBodyFat.weightKg) * 100
+          : null;
+      data = {
+        metric,
+        kicker: "Body composition",
+        title: "Lean body mass",
+        subtitle: "Your weight minus fat mass: muscle, bone, organs, and water.",
+        value: metrics.leanMassKg !== null ? toDisplayWeight(metrics.leanMassKg) : null,
+        displayValue:
+          metrics.leanMassKg !== null
+            ? formatNumber(toDisplayWeight(metrics.leanMassKg), 1)
+            : "—",
+        unit,
+        badge: ffmiContext
+          ? { label: `FFMI ${ffmiContext.label}`, tone: ffmiContext.tone }
+          : { label: "Needs body fat", tone: "neutral" },
+        description:
+          metrics.leanMassKg !== null
+            ? `Lean mass is everything besides fat. At your latest reading it makes up ${formatNumber(leanShare, 0)}% of your body weight, and your FFMI is ${formatNumber(metrics.ffmi, 1)}.`
+            : "Add a body fat percentage to a weigh-in to calculate lean mass and see how it changes.",
+        rangeMode: metrics.leanMassKg !== null ? "composition" : "none",
+        rangeContext: null,
+        rangeTitle: "Your body composition",
+        band: null,
+        goal: null,
+        series,
+        facts: metrics.latestBodyFat
+          ? [
+              {
+                label: "Fat mass",
+                value:
+                  metrics.fatMassKg !== null
+                    ? `${formatNumber(toDisplayWeight(metrics.fatMassKg), 1)} ${unit}`
+                    : "—",
+                hint: "",
+              },
+              {
+                label: "Body fat",
+                value:
+                  metrics.bodyFatPct !== null
+                    ? `${formatNumber(metrics.bodyFatPct, 1)}%`
+                    : "—",
+                hint: `${formatNumber(leanShare, 0)}% of weight is lean`,
+              },
+              {
+                label: "FFMI",
+                value: metrics.ffmi !== null ? formatNumber(metrics.ffmi, 1) : "Add height",
+                hint: ffmiContext ? ffmiContext.label : "",
+              },
+              {
+                label: "Normalized FFMI",
+                value:
+                  metrics.normalizedFfmi !== null
+                    ? formatNumber(metrics.normalizedFfmi, 1)
+                    : "Add height",
+                hint: "",
+              },
+            ]
+          : [],
+        footnote:
+          "Lean mass has no universal target on its own. It is most useful alongside body fat, height, and FFMI, and as a personal trend over time.",
+        emptyCopy: "Add body fat to a weigh-in to start the lean mass trend.",
+        chartUnit: unit,
+      };
+    } else {
+      const series =
+        metrics.heightCm !== null
+          ? state.entries
+              .filter((entry) => entry.bodyFatPct !== null)
+              .map((entry) => {
+                const leanKg = entry.weightKg * (1 - entry.bodyFatPct / 100);
+                return {
+                  at: new Date(entry.at),
+                  value: leanKg / (heightM * heightM),
+                };
+              })
+          : [];
+      const context = metrics.ffmi !== null ? getFfmiContext(metrics.ffmi) : null;
+      const athleticBand = context
+        ? context.bands.find((band) => band.label === "Athletic")
+        : null;
+      data = {
+        metric: "ffmi",
+        kicker: "Fat-free mass index",
+        title: "FFMI",
+        subtitle: "Lean mass relative to height — a way to compare muscularity.",
+        value: metrics.ffmi,
+        displayValue: metrics.ffmi !== null ? formatNumber(metrics.ffmi, 1) : "—",
+        unit: "kg/m²",
+        badge: context
+          ? { label: context.label, tone: context.tone }
+          : state.profile.heightCm
+            ? { label: "Needs body fat", tone: "neutral" }
+            : metrics.bodyFatPct !== null
+              ? { label: "Add height", tone: "neutral" }
+              : { label: "Needs body fat + height", tone: "neutral" },
+        description: context
+          ? context.description
+          : state.profile.heightCm
+            ? "Add a body fat percentage to a weigh-in to calculate FFMI and see how it has changed."
+            : "FFMI needs both your height and a body fat reading. Add both to put lean mass in context.",
+        rangeMode: context ? "single" : "none",
+        rangeContext: context,
+        rangeTitle: "FFMI reference ranges",
+        band: athleticBand
+          ? { min: athleticBand.min, max: athleticBand.max, label: "Athletic reference" }
+          : null,
+        goal: null,
+        series,
+        facts: metrics.ffmi !== null
+          ? [
+              {
+                label: "Normalized FFMI",
+                value: formatNumber(metrics.normalizedFfmi, 1),
+                hint: "Adjusts for height",
+              },
+              {
+                label: "Lean mass",
+                value: `${formatNumber(toDisplayWeight(metrics.leanMassKg), 1)} ${unit}`,
+                hint: "",
+              },
+              {
+                label: "Height",
+                value: `${formatHeight(metrics.heightCm)} ${heightUnit()}`,
+                hint: "",
+              },
+              {
+                label: "Reference",
+                value: REFERENCE_LABELS[referenceGroup()],
+                hint: "Used for context only",
+              },
+            ]
+          : [],
+        footnote:
+          "FFMI benchmarks are approximate and vary by sex, age, training history, and genetics. They are not a measure of health. Athletic values commonly sit around 22–24 for men; ranges for women are typically a few points lower.",
+        emptyCopy: "Add body fat and height to start the FFMI trend.",
+        chartUnit: "FFMI",
+      };
+    }
+
+    data.chartMeta = buildSeriesMeta(data.series, data);
+    return data;
+  }
+
+  function renderInsightChart(data) {
+    const width = Math.max(260, Math.round(dom.insightChartWrap.clientWidth));
+    const height = Math.max(140, Math.round(dom.insightChartWrap.clientHeight));
+    const series = data.series;
+    if (!series.length) {
+      dom.insightChart.hidden = true;
+      dom.insightChartEmpty.hidden = false;
+      dom.insightChartEmpty.textContent = data.emptyCopy;
+      return;
+    }
+
+    dom.insightChart.hidden = false;
+    dom.insightChartEmpty.hidden = true;
+    const margins = { top: 13, right: 13, bottom: 25, left: 37 };
+    const plot = {
+      left: margins.left,
+      right: width - margins.right,
+      top: margins.top,
+      bottom: height - margins.bottom,
+      width: width - margins.left - margins.right,
+      height: height - margins.top - margins.bottom,
+    };
+
+    let start = series[0].at;
+    let end = series.at(-1).at;
+    if (end.getTime() - start.getTime() < 7 * DAY_MS) {
+      const middle = new Date((start.getTime() + end.getTime()) / 2);
+      start = addDays(middle, -4);
+      end = addDays(middle, 4);
+    }
+    let dataMin = Math.min(...series.map((point) => point.value));
+    let dataMax = Math.max(...series.map((point) => point.value));
+    if (data.band) {
+      dataMin = Math.min(dataMin, data.band.min);
+      dataMax = Math.max(dataMax, data.band.max);
+    }
+    if (data.goal !== null && data.goal !== undefined) {
+      dataMin = Math.min(dataMin, data.goal);
+      dataMax = Math.max(dataMax, data.goal);
+    }
+    if (dataMax - dataMin < 0.2) {
+      dataMin -= 1;
+      dataMax += 1;
+    }
+    const padding = (dataMax - dataMin) * 0.15;
+    let axisMin = dataMin - padding;
+    let axisMax = dataMax + padding;
+    const step = niceStep((axisMax - axisMin) / 3);
+    axisMin = Math.floor(axisMin / step) * step;
+    axisMax = Math.ceil(axisMax / step) * step;
+
+    const xScale = (date) =>
+      plot.left +
+      ((date.getTime() - start.getTime()) / Math.max(1, end.getTime() - start.getTime())) *
+        plot.width;
+    const yScale = (value) =>
+      plot.bottom - ((value - axisMin) / Math.max(0.0001, axisMax - axisMin)) * plot.height;
+    const parts = [];
+
+    if (data.band) {
+      const top = yScale(Math.min(data.band.max, axisMax));
+      const bottom = yScale(Math.max(data.band.min, axisMin));
+      if (bottom > top) {
+        parts.push(
+          `<rect class="detail-band" x="${plot.left}" y="${top.toFixed(1)}" width="${plot.width}" height="${(bottom - top).toFixed(1)}"></rect>`,
+        );
+      }
+    }
+
+    for (let i = 0; i <= 3; i += 1) {
+      const value = axisMin + ((axisMax - axisMin) * i) / 3;
+      const y = yScale(value);
+      parts.push(
+        `<line class="detail-grid" x1="${plot.left}" y1="${y.toFixed(1)}" x2="${plot.right}" y2="${y.toFixed(1)}"></line>`,
+        `<text class="detail-axis" x="${plot.left - 7}" y="${(y + 3).toFixed(1)}" text-anchor="end">${formatNumber(value, axisMax - axisMin < 5 ? 1 : 0)}</text>`,
+      );
+    }
+
+    for (let i = 0; i < 3; i += 1) {
+      const ratio = i / 2;
+      const date = new Date(start.getTime() + (end.getTime() - start.getTime()) * ratio);
+      const x = plot.left + plot.width * ratio;
+      const anchor = i === 0 ? "start" : i === 2 ? "end" : "middle";
+      parts.push(
+        `<text class="detail-axis" x="${x.toFixed(1)}" y="${height - 8}" text-anchor="${anchor}">${formatDateShort(date)}</text>`,
+      );
+    }
+
+    if (data.goal !== null && data.goal !== undefined) {
+      const y = yScale(data.goal);
+      if (y >= plot.top && y <= plot.bottom) {
+        parts.push(
+          `<line class="detail-goal" x1="${plot.left}" y1="${y.toFixed(1)}" x2="${plot.right}" y2="${y.toFixed(1)}"></line>`,
+        );
+      }
+    }
+
+    const points = series.map((point) => ({
+      ...point,
+      x: xScale(point.at),
+      y: yScale(point.value),
+    }));
+    if (points.length > 1) {
+      const line = points
+        .map((point, index) => `${index === 0 ? "M" : "L"}${point.x.toFixed(1)} ${point.y.toFixed(1)}`)
+        .join(" ");
+      parts.push(`<path class="detail-line" d="${line}"></path>`);
+    }
+
+    const fit =
+      series.length > 1
+        ? linearRegression(
+            series.map((point) => ({
+              x: point.at.getTime() / DAY_MS,
+              y: point.value,
+            })),
+          )
+        : null;
+    if (fit) {
+      const first = series[0].at.getTime() / DAY_MS;
+      const last = series.at(-1).at.getTime() / DAY_MS;
+      parts.push(
+        `<line class="detail-trend" x1="${xScale(series[0].at).toFixed(1)}" y1="${yScale(fit.intercept + fit.slope * first).toFixed(1)}" x2="${xScale(series.at(-1).at).toFixed(1)}" y2="${yScale(fit.intercept + fit.slope * last).toFixed(1)}"></line>`,
+      );
+    }
+
+    const dotStride = points.length > 60 ? Math.ceil(points.length / 60) : 1;
+    points.forEach((point, index) => {
+      if (index !== points.length - 1 && index % dotStride !== 0) return;
+      parts.push(
+        `<circle class="${index === points.length - 1 ? "detail-dot-latest" : "detail-dot"}" cx="${point.x.toFixed(1)}" cy="${point.y.toFixed(1)}" r="${index === points.length - 1 ? 4.2 : 2.5}"></circle>`,
+      );
+    });
+
+    dom.insightChart.setAttribute("viewBox", `0 0 ${width} ${height}`);
+    dom.insightChart.setAttribute(
+      "aria-label",
+      `${data.title} trend from ${formatDateShort(series[0].at)} to ${formatDateShort(series.at(-1).at)}`,
+    );
+    dom.insightChart.innerHTML = parts.join("");
+  }
+
+  function openInsight(metric) {
+    const data = buildInsightData(metric);
+    ui.currentInsight = data;
+    dom.insightKicker.textContent = data.kicker;
+    dom.insightTitle.textContent = data.title;
+    dom.insightSubtitle.textContent = data.subtitle;
+    dom.insightValue.textContent = data.displayValue;
+    dom.insightUnit.textContent = data.unit;
+    dom.insightBadge.textContent = data.badge.label;
+    dom.insightBadge.className = `context-badge tone-${data.badge.tone}`;
+    dom.insightDescription.textContent = data.description;
+    dom.insightChartMeta.textContent = data.chartMeta;
+    dom.insightFacts.innerHTML = buildFactsHtml(data.facts);
+    dom.insightFootnote.textContent = data.footnote;
+
+    if (data.rangeMode === "single" && data.rangeContext) {
+      dom.insightRange.hidden = false;
+      dom.insightRange.innerHTML = buildSingleRange(
+        data.rangeContext,
+        data.rangeTitle || "Reference ranges",
+      );
+    } else if (data.rangeMode === "references" && data.rangeContext) {
+      dom.insightRange.hidden = false;
+      dom.insightRange.innerHTML = buildReferenceCompare(data.rangeContext);
+    } else if (data.rangeMode === "composition") {
+      dom.insightRange.hidden = false;
+      dom.insightRange.innerHTML = buildCompositionRange(calculateMetrics());
+    } else {
+      dom.insightRange.hidden = true;
+      dom.insightRange.innerHTML = "";
+    }
+
+    dom.insightDialog.scrollTop = 0;
+    dom.insightDialog.showModal();
+    window.requestAnimationFrame(() => renderInsightChart(data));
+  }
+
+  function buildPaceMeter(goalContext) {
+    if (!goalContext || goalContext.direction === "steady") return "";
+    const isLoss = goalContext.direction === "loss";
+    const boundaries = isLoss ? [0.25, 1] : [0.1, 0.5];
+    const standardMax = isLoss ? 1.2 : 0.8;
+    const values = [];
+    if (goalContext.requiredPercent !== null) values.push(Math.abs(goalContext.requiredPercent));
+    if (
+      goalContext.recentPace &&
+      (goalContext.requiredPace === null ||
+        Math.sign(goalContext.recentPace.kgPerWeek) === Math.sign(goalContext.requiredPace))
+    ) {
+      values.push(Math.abs(goalContext.recentPace.percentPerWeek));
+    }
+    const domain = Math.max(standardMax, ...values.map((value) => value * 1.1), 0.2);
+    const labels = isLoss
+      ? ["Gentle", "Sustainable", "Fast"]
+      : ["Gentle", "Steady", "Fast"];
+    const bands = [
+      { start: 0, end: boundaries[0], tone: "cool" },
+      { start: boundaries[0], end: boundaries[1], tone: "good" },
+      { start: boundaries[1], end: domain, tone: "warm" },
+    ];
+    const bandHtml = bands
+      .map(
+        (band) =>
+          `<span class="pace-meter-band tone-${band.tone}" style="width:${(((band.end - band.start) / domain) * 100).toFixed(2)}%"></span>`,
+      )
+      .join("");
+    const labelHtml = bands
+      .map(
+        (band, index) =>
+          `<span style="width:${(((band.end - band.start) / domain) * 100).toFixed(2)}%">${labels[index]}</span>`,
+      )
+      .join("");
+    let requiredMarker = "";
+    let recentMarker = "";
+    if (goalContext.requiredPercent !== null) {
+      const left = clamp((Math.abs(goalContext.requiredPercent) / domain) * 100, 0, 100);
+      requiredMarker = `<span class="pace-meter-marker" style="left:${left.toFixed(2)}%" title="Goal pace"></span>`;
+    }
+    if (
+      goalContext.recentPace &&
+      goalContext.requiredPace !== null &&
+      Math.sign(goalContext.recentPace.kgPerWeek) === Math.sign(goalContext.requiredPace)
+    ) {
+      const left = clamp((Math.abs(goalContext.recentPace.percentPerWeek) / domain) * 100, 0, 100);
+      recentMarker = `<span class="pace-meter-marker is-recent" style="left:${left.toFixed(2)}%" title="Recent pace"></span>`;
+    } else if (goalContext.recentPace && goalContext.requiredPace === null) {
+      const left = clamp((Math.abs(goalContext.recentPace.percentPerWeek) / domain) * 100, 0, 100);
+      recentMarker = `<span class="pace-meter-marker is-recent" style="left:${left.toFixed(2)}%" title="Recent pace"></span>`;
+    }
+    return `<div class="pace-meter-track"><div class="pace-meter-bands">${bandHtml}</div>${requiredMarker}${recentMarker}</div><div class="pace-meter-labels">${labelHtml}</div><div class="pace-marker-legend"><span><i class="pace-key"></i>Goal pace</span><span><i class="pace-key is-recent"></i>Recent pace</span></div>`;
+  }
+
+  function openGoalDetail() {
+    if (state.goal.weightKg === null) {
+      openSettings();
+      return;
+    }
+    const goalContext = getGoalContext();
+    const metrics = calculateMetrics();
+    const unit = weightUnit();
+    const heightM = metrics.heightCm ? metrics.heightCm / 100 : null;
+    const targetWeight = goalContext.targetWeight;
+    const targetBmi = heightM ? targetWeight / (heightM * heightM) : null;
+    const targetBmiContext = targetBmi !== null ? getBmiContext(targetBmi) : null;
+    const currentLean = metrics.leanMassKg;
+    const currentFfmi = metrics.ffmi;
+    const projectedBf =
+      currentLean !== null && targetWeight > currentLean
+        ? (1 - currentLean / targetWeight) * 100
+        : null;
+    const projectedBfContext =
+      projectedBf !== null ? getBodyFatContext(projectedBf) : null;
+    const targetFfmi =
+      currentLean !== null && heightM ? currentLean / (heightM * heightM) : null;
+    const targetFfmiContext =
+      targetFfmi !== null ? getFfmiContext(targetFfmi) : null;
+    const weightForTargetBf =
+      currentLean !== null && goalContext.targetBodyFat !== null
+        ? currentLean / (1 - goalContext.targetBodyFat / 100)
+        : null;
+
+    const metaParts = [];
+    if (goalContext.date) metaParts.push(formatTargetDate(goalContext.date));
+    if (goalContext.targetBodyFat !== null) {
+      metaParts.push(`${formatNumber(goalContext.targetBodyFat, 1)}% body fat`);
+    }
+    dom.goalDetailSubtitle.textContent = `Target ${formatNumber(toDisplayWeight(targetWeight), 1)} ${unit}${goalContext.date ? ` by ${formatTargetDate(goalContext.date)}` : ""}${goalContext.targetBodyFat !== null ? ` · ${formatNumber(goalContext.targetBodyFat, 1)}% body fat` : ""}.`;
+    dom.goalDetailTarget.textContent = formatNumber(toDisplayWeight(targetWeight), 1);
+    dom.goalDetailUnit.textContent = unit;
+    dom.goalDetailTargetMeta.textContent = metaParts.length
+      ? metaParts.join(" · ")
+      : "No deadline";
+    setStatusBadge(
+      dom.goalDetailBadge,
+      goalContext.status.label,
+      goalContext.status.tone,
+    );
+    dom.goalDetailSummary.textContent = goalSummaryText(goalContext);
+
+    dom.goalRequiredPace.textContent =
+      goalContext.requiredPace !== null
+        ? `${formatPaceValue(goalContext.requiredPace)} ${unit}/wk`
+        : "No deadline";
+    if (goalContext.recentPace) {
+      const sign =
+        goalContext.recentPace.direction === "gain"
+          ? "+"
+          : goalContext.recentPace.direction === "loss"
+            ? "−"
+            : "";
+      dom.goalRecentPace.textContent =
+        goalContext.recentPace.direction === "steady"
+          ? `0.0 ${unit}/wk`
+          : `${sign}${formatPaceValue(goalContext.recentPace.kgPerWeek)} ${unit}/wk`;
+    } else {
+      dom.goalRecentPace.textContent = "Need more data";
+    }
+
+    const paceContextParts = [];
+    if (goalContext.requiredPace !== null) {
+      const percentText = formatNumber(
+        Math.abs(goalContext.requiredPercent),
+        Math.abs(goalContext.requiredPercent) < 0.1 ? 2 : 1,
+      );
+      paceContextParts.push(
+        `The target needs ${formatPaceValue(goalContext.requiredPace)} ${unit}/wk, or about ${percentText}% of body weight per week — a ${goalContext.requiredClass?.label?.toLowerCase() || "target"} pace.`,
+      );
+    } else if (!goalContext.date) {
+      paceContextParts.push(
+        "Set a target date to calculate the weekly pace needed and compare it with your recent trend.",
+      );
+    }
+    if (goalContext.recentPace) {
+      paceContextParts.push(
+        `Your recent trend is a ${goalContext.actualClass.label.toLowerCase()} pace.`,
+      );
+    } else {
+      paceContextParts.push("There aren't enough recent weigh-ins for a pace comparison yet.");
+    }
+    paceContextParts.push("General fitness guidance, not medical advice.");
+    dom.goalPaceContext.textContent = paceContextParts.join(" ");
+    dom.goalPaceMeter.innerHTML = goalContext.latest ? buildPaceMeter(goalContext) : "";
+
+    if (targetBmi !== null) {
+      dom.goalBmiValue.textContent = formatNumber(targetBmi, 1);
+      setContextTag(dom.goalBmiTag, targetBmiContext);
+      if (heightM) {
+        const healthyLow = toDisplayWeight(18.5 * heightM * heightM);
+        const healthyHigh = toDisplayWeight(24.9 * heightM * heightM);
+        dom.goalBmiDescription.textContent = `${targetBmiContext.description} Healthy weight for your height is ${formatNumber(healthyLow, 1)}–${formatNumber(healthyHigh, 1)} ${unit}.`;
+      } else {
+        dom.goalBmiDescription.textContent = targetBmiContext.description;
+      }
+    } else {
+      dom.goalBmiValue.textContent = "—";
+      setContextTag(dom.goalBmiTag, null);
+      dom.goalBmiDescription.textContent = "Add your height to project BMI at this goal.";
+    }
+
+    if (projectedBf !== null && projectedBfContext) {
+      dom.goalBfValue.textContent = `${formatNumber(projectedBf, 1)}%`;
+      setContextTag(dom.goalBfTag, {
+        label: projectedBfContext.band ? projectedBfContext.band.label : projectedBfContext.label,
+        tone: projectedBfContext.band ? projectedBfContext.band.tone : projectedBfContext.tone,
+      });
+      let copy = `At ${formatNumber(toDisplayWeight(targetWeight), 1)} ${unit} with your current lean mass, estimated body fat is ${formatNumber(projectedBf, 1)}%.`;
+      if (goalContext.targetBodyFat !== null) {
+        const difference = projectedBf - goalContext.targetBodyFat;
+        if (Math.abs(difference) < 1) {
+          copy += ` That's in line with your ${formatNumber(goalContext.targetBodyFat, 1)}% target.`;
+        } else {
+          copy += ` That differs from your ${formatNumber(goalContext.targetBodyFat, 1)}% target by ${formatNumber(Math.abs(difference), 1)} pts.`;
+        }
+        if (weightForTargetBf !== null) {
+          copy += ` Holding lean mass, ${formatNumber(goalContext.targetBodyFat, 1)}% body fat would correspond to about ${formatNumber(toDisplayWeight(weightForTargetBf), 1)} ${unit}.`;
+        }
+      }
+      dom.goalBfDescription.textContent = copy;
+    } else {
+      dom.goalBfValue.textContent = "—";
+      setContextTag(dom.goalBfTag, null);
+      if (currentLean === null) {
+        dom.goalBfDescription.textContent = "Add a body fat reading to estimate body fat at this goal.";
+      } else {
+        dom.goalBfDescription.textContent =
+          "This target weight is below your current lean mass. Reaching it would require losing lean mass, so a body fat projection isn't meaningful.";
+      }
+    }
+
+    if (targetFfmi !== null) {
+      dom.goalFfmiValue.textContent = formatNumber(targetFfmi, 1);
+      setContextTag(dom.goalFfmiTag, targetFfmiContext);
+      dom.goalFfmiDescription.textContent = `If lean mass stays near ${formatNumber(toDisplayWeight(currentLean), 1)} ${unit}, FFMI would remain around ${formatNumber(targetFfmi, 1)} — ${targetFfmiContext.label.toLowerCase()} for this reference.`;
+    } else {
+      dom.goalFfmiValue.textContent = "—";
+      setContextTag(dom.goalFfmiTag, null);
+      dom.goalFfmiDescription.textContent =
+        "Add body fat and height to project FFMI at this goal.";
+    }
+
+    dom.goalProjectionNote.textContent =
+      currentLean !== null
+        ? `Assumes lean mass stays near ${formatNumber(toDisplayWeight(currentLean), 1)} ${unit}.`
+        : "Projections need a body fat reading and height.";
+
+    const forecastParts = [];
+    if (goalContext.reached) {
+      forecastParts.push("You've reached this goal weight. Set a new target whenever you're ready.");
+    } else if (goalContext.projectedDate) {
+      forecastParts.push(
+        `At your recent pace, you're projected to reach ${formatNumber(toDisplayWeight(targetWeight), 1)} ${unit} around <strong>${formatProjectedDate(goalContext.projectedDate)}</strong>.`,
+      );
+      if (goalContext.date) {
+        const dayDifference = Math.round(
+          (goalContext.projectedDate.getTime() - goalContext.date.getTime()) / DAY_MS,
+        );
+        if (dayDifference < -1) {
+          forecastParts.push(`That's about ${Math.abs(dayDifference)} days ahead of your target date.`);
+        } else if (dayDifference > 1) {
+          forecastParts.push(`That's about ${dayDifference} days after your target date.`);
+        } else {
+          forecastParts.push("That's right around your target date.");
+        }
+      }
+    } else if (goalContext.recentPace && goalContext.status.key === "off-track") {
+      forecastParts.push(
+        "Your recent direction is moving away from this goal, so no finish date can be projected yet.",
+      );
+    } else {
+      forecastParts.push(
+        "Log a few more weigh-ins to project a finish date at your current pace.",
+      );
+    }
+    if (projectedBf !== null) {
+      forecastParts.push(
+        `Expected body fat at this weight is about ${formatNumber(projectedBf, 1)}% if lean mass stays the same.`,
+      );
+    }
+    dom.goalForecast.innerHTML = forecastParts.join(" ");
+
+    const remaining = goalContext.latest
+      ? Math.abs(targetWeight - goalContext.current)
+      : 0;
+    const projectedLabel = goalContext.projectedDate
+      ? formatProjectedDate(goalContext.projectedDate)
+      : "Need more data";
+    dom.goalDetailFacts.innerHTML = buildFactsHtml([
+      {
+        label: "Progress",
+        value:
+          goalContext.latest !== null
+            ? `${Math.round(goalContext.progress * 100)}%`
+            : "No weigh-ins yet",
+        hint: goalContext.latest ? `${formatNumber(toDisplayWeight(remaining), 1)} ${unit} remaining` : "",
+      },
+      {
+        label: "Target date",
+        value: goalContext.date ? formatTargetDate(goalContext.date) : "No deadline",
+        hint: goalContext.daysLeft !== null && goalContext.daysLeft > 0 ? `${goalContext.daysLeft} days left` : "",
+      },
+      {
+        label: "Projected finish",
+        value: projectedLabel,
+        hint: goalContext.recentPace ? "At your recent pace" : "Needs more weigh-ins",
+      },
+      {
+        label: "Goal pace",
+        value:
+          goalContext.requiredPace !== null
+            ? `${formatPaceValue(goalContext.requiredPace)} ${unit}/wk`
+            : "No deadline",
+        hint: goalContext.requiredClass ? `${goalContext.requiredClass.label} pace` : "",
+      },
+    ]);
+
+    dom.goalDetailDialog.scrollTop = 0;
+    if (dom.insightDialog.open) dom.insightDialog.close();
+    dom.goalDetailDialog.showModal();
+  }
+
+  function formatProjectedDate(date) {
+    return new Intl.DateTimeFormat(undefined, {
+      month: "short",
+      day: "numeric",
+      ...(date.getFullYear() !== new Date().getFullYear() ? { year: "numeric" } : {}),
+    }).format(date);
+  }
+
+  function formatTargetDate(date) {
+    return new Intl.DateTimeFormat(undefined, {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      ...(date.getFullYear() !== new Date().getFullYear() ? { year: "numeric" } : {}),
+    }).format(date);
+  }
+
+  function goalSummaryText(goalContext) {
+    if (!goalContext || !goalContext.latest) {
+      return "Log your first weigh-in to start tracking this goal.";
+    }
+    const unit = weightUnit();
+    const current = goalContext.current;
+    const target = goalContext.targetWeight;
+    const remaining = formatNumber(toDisplayWeight(Math.abs(target - current)), 1);
+    if (goalContext.reached) {
+      return "You've reached this target. Set a new goal whenever you're ready.";
+    }
+
+    const recentCopy = goalContext.recentPace
+      ? `Recent pace is ${formatPaceValue(goalContext.recentPace.kgPerWeek)} ${unit}/wk${goalContext.actualClass ? ` (${goalContext.actualClass.label.toLowerCase()})` : ""}.`
+      : "There aren't enough recent weigh-ins for a pace estimate.";
+
+    if (!goalContext.date) {
+      const projection = goalContext.projectedDate
+        ? ` At this pace, you'd reach ${formatNumber(toDisplayWeight(target), 1)} ${unit} around ${formatProjectedDate(goalContext.projectedDate)}.`
+        : "";
+      return `${remaining} ${unit} to go. ${recentCopy}${projection} Add a target date for on-track guidance.`;
+    }
+
+    if (goalContext.daysLeft <= 0) {
+      return `${remaining} ${unit} to go, and the target date has passed. ${recentCopy}`;
+    }
+
+    const targetDate = formatTargetDate(goalContext.date);
+    const required = formatPaceValue(goalContext.requiredPace);
+    const statusKey = goalContext.status.key;
+
+    if (statusKey === "on-track" || statusKey === "maintain") {
+      const projected = goalContext.projectedDate
+        ? ` You're projected to reach it around ${formatProjectedDate(goalContext.projectedDate)}.`
+        : "";
+      return `${remaining} ${unit} to go. ${recentCopy} That's on track for ${targetDate}.${projected}`;
+    }
+    if (statusKey === "ahead") {
+      return `${remaining} ${unit} to go. ${recentCopy} You're ahead of the ${required} ${unit}/wk needed for ${targetDate}.`;
+    }
+    if (statusKey === "behind") {
+      return `${remaining} ${unit} to go. ${recentCopy} You need about ${required} ${unit}/wk for ${targetDate}, so a little more momentum would help.`;
+    }
+    if (statusKey === "off-track") {
+      return `${remaining} ${unit} to go. ${recentCopy} Your recent direction is moving away from the target, so the pace needs to turn around.`;
+    }
+    if (statusKey === "too-fast") {
+      return `${remaining} ${unit} to go. ${recentCopy} You're moving faster than the ${required} ${unit}/wk needed. That's fine if it feels sustainable, but you can ease off.`;
+    }
+    if (statusKey === "overdue") {
+      return `${remaining} ${unit} to go, and the target date has passed. ${recentCopy}`;
+    }
+    return `${remaining} ${unit} to go. ${recentCopy} The target date is ${targetDate}.`;
+  }
+
+  function renderMomentum() {
+    const recent = getRecentPace();
+    const goalContext = getGoalContext();
+    let title = "Waiting for more data";
+    let detail = "Log a few weigh-ins and we'll show your average weekly pace.";
+    let badge = { label: "Not enough data", tone: "neutral" };
+    let action = "Log a weigh-in";
+
+    if (recent) {
+      const unit = weightUnit();
+      const pace = formatPaceValue(recent.kgPerWeek);
+      if (recent.direction === "loss") title = `Losing ${pace} ${unit}/week`;
+      else if (recent.direction === "gain") title = `Gaining ${pace} ${unit}/week`;
+      else title = "Holding steady";
+
+      if (goalContext) {
+        badge = goalContext.status;
+        detail = goalSummaryText(goalContext);
+        action = "Goal details";
+      } else {
+        badge = classifyPace(
+          recent.percentPerWeek,
+          recent.direction === "loss"
+            ? "loss"
+            : recent.direction === "gain"
+              ? "gain"
+              : "steady",
+        );
+        detail = `${badge.description} Set a goal to get on-track guidance.`;
+        action = "Set a goal";
+      }
+    } else if (goalContext) {
+      badge = goalContext.status;
+      detail = goalSummaryText(goalContext);
+      action = "Goal details";
+    } else if (state.entries.length > 0) {
+      detail =
+        "At least two weigh-ins over a few days will show your average weekly pace.";
+      action = "Log a weigh-in";
+    }
+
+    dom.momentumTitle.textContent = title;
+    dom.momentumDetail.textContent = detail;
+    setStatusBadge(dom.momentumBadge, badge.label, badge.tone);
+    dom.momentumAction.innerHTML = `${escapeHtml(action)} <span aria-hidden="true">→</span>`;
   }
 
   function getChartConfig() {
@@ -901,6 +2365,30 @@
       );
     }
 
+    const trendSamples = filtered.map((entry) => ({
+      x: new Date(entry.at).getTime() / DAY_MS,
+      y: config.display(config.value(entry)),
+      at: new Date(entry.at),
+    }));
+    const trendFit =
+      trendSamples.length > 1 &&
+      trendSamples.at(-1).x - trendSamples[0].x > 0.5
+        ? linearRegression(trendSamples)
+        : null;
+    let trendLine = null;
+    let trendRate = null;
+    if (trendFit) {
+      const firstTime = trendSamples[0].x;
+      const lastTime = trendSamples.at(-1).x;
+      trendLine = {
+        x1: xScale(trendSamples[0].at),
+        y1: yScale(trendFit.intercept + trendFit.slope * firstTime),
+        x2: xScale(trendSamples.at(-1).at),
+        y2: yScale(trendFit.intercept + trendFit.slope * lastTime),
+      };
+      trendRate = trendFit.slope * 7;
+    }
+
     const dailyPoints = filtered.map((entry) => ({
       x: xScale(new Date(entry.at)),
       y: yScale(config.display(config.value(entry))),
@@ -926,6 +2414,12 @@
       parts.push(
         `<path class="chart-area" d="${area}"></path>`,
         `<path class="chart-line" d="${line}"></path>`,
+      );
+    }
+
+    if (trendLine) {
+      parts.push(
+        `<line class="chart-trend-line" x1="${trendLine.x1.toFixed(1)}" y1="${trendLine.y1.toFixed(1)}" x2="${trendLine.x2.toFixed(1)}" y2="${trendLine.y2.toFixed(1)}"></line>`,
       );
     }
 
@@ -958,6 +2452,7 @@
     dom.chartEmpty.hidden = true;
     dom.chartTooltip.classList.remove("is-visible");
     dom.goalLegend.classList.toggle("is-hidden", !showGoal);
+    dom.trendLegend.classList.toggle("is-hidden", !trendLine);
 
     dom.chartStage.__chartModel = {
       points: weeklyPoints,
@@ -968,21 +2463,26 @@
       showGoal,
     };
 
+    const trendUnit = config.key === "bodyFat" ? "pts" : config.unit;
+    const trendCopy =
+      trendRate !== null && Number.isFinite(trendRate)
+        ? `Trend <strong>${trendRate < 0 ? "−" : "+"}${formatNumber(Math.abs(trendRate), Math.abs(trendRate) < 0.1 ? 2 : 1)} ${trendUnit}/wk</strong>.`
+        : "";
     if (weeklyGroups.length > 1) {
       const latest = weeklyGroups.at(-1);
       const previous = weeklyGroups.at(-2);
       const delta = config.display(latest.avg) - config.display(previous.avg);
       const formattedDelta = formatNumber(Math.abs(delta), 1);
       if (Math.abs(delta) < 0.05) {
-        dom.chartInsight.innerHTML = "Your weekly averages are holding steady.";
+        dom.chartInsight.innerHTML = `Weekly averages are holding steady. ${trendCopy}`;
       } else {
         const direction = delta > 0 ? "higher" : "lower";
         const unit = config.key === "bodyFat" ? "pts" : config.unit;
-        dom.chartInsight.innerHTML = `Latest weekly average is <strong>${formattedDelta} ${unit} ${direction}</strong> than the week before.`;
+        dom.chartInsight.innerHTML = `Latest week is <strong>${formattedDelta} ${unit} ${direction}</strong> than the week before. ${trendCopy}`;
       }
     } else {
-      dom.chartInsight.textContent =
-        "One week logged. Keep checking in to build a clearer trend.";
+      dom.chartInsight.innerHTML =
+        trendCopy || "One week logged. Keep checking in to build a clearer trend.";
     }
   }
 
@@ -991,6 +2491,7 @@
     dom.chartEmpty.hidden = false;
     dom.chartTooltip.classList.remove("is-visible");
     dom.goalLegend.classList.add("is-hidden");
+    dom.trendLegend.classList.add("is-hidden");
     dom.chartEmptyTitle.textContent = title;
     dom.chartEmptyCopy.textContent = copy;
     dom.chartInsight.textContent = "";
@@ -1122,6 +2623,7 @@
     sortEntries();
     updateTodayLabel();
     renderSummary();
+    renderMomentum();
     renderComposition();
     renderProfileNudge();
     renderChart();
@@ -1295,6 +2797,7 @@
     dom.goalBodyFatInput.value =
       state.goal.bodyFatPct !== null ? String(round(state.goal.bodyFatPct, 1)) : "";
     dom.goalDateInput.value = state.goal.date || "";
+    dom.referenceInput.value = referenceGroup();
     dom.settingsDialog.showModal();
   }
 
@@ -1444,6 +2947,9 @@
 
     state.unitSystem = unit;
     state.profile.heightCm = heightCm;
+    state.profile.reference = ["male", "female"].includes(dom.referenceInput.value)
+      ? dom.referenceInput.value
+      : "general";
     state.goal = goalWeightKg === null
       ? { weightKg: null, bodyFatPct: null, date: null }
       : {
@@ -1815,6 +3321,18 @@
       return;
     }
 
+    const goalTrigger = event.target.closest("[data-goal-detail]");
+    if (goalTrigger) {
+      openGoalDetail();
+      return;
+    }
+
+    const insightTrigger = event.target.closest("[data-insight]");
+    if (insightTrigger) {
+      openInsight(insightTrigger.dataset.insight);
+      return;
+    }
+
     const closeTrigger = event.target.closest("[data-close]");
     if (closeTrigger) {
       closeTrigger.closest("dialog")?.close();
@@ -1862,6 +3380,27 @@
     dom.introLogButton.addEventListener("click", () => openEntryDialog());
     dom.openSettingsButton.addEventListener("click", openSettings);
     dom.introSetupButton.addEventListener("click", openSettings);
+    dom.goalCard.addEventListener("click", (event) => {
+      if (
+        state.goal.weightKg !== null &&
+        !event.target.closest("button, a")
+      ) {
+        openGoalDetail();
+      }
+    });
+    dom.momentumAction.addEventListener("click", () => {
+      if (state.goal.weightKg !== null) openGoalDetail();
+      else if (state.entries.length === 0) openEntryDialog();
+      else openSettings();
+    });
+    dom.insightSettingsButton.addEventListener("click", () => {
+      dom.insightDialog.close();
+      openSettings();
+    });
+    dom.goalEditButton.addEventListener("click", () => {
+      dom.goalDetailDialog.close();
+      openSettings();
+    });
     dom.entryForm.addEventListener("submit", handleEntrySubmit);
     dom.settingsForm.addEventListener("submit", handleSettingsSubmit);
     dom.deleteEntryButton.addEventListener("click", () => {
@@ -1879,8 +3418,20 @@
       .forEach((radio) => radio.addEventListener("change", handleSettingsUnitChange));
 
     document.addEventListener("click", handleGlobalClick);
-    [dom.entryDialog, dom.settingsDialog, dom.confirmDialog].forEach((dialog) => {
+    [
+      dom.entryDialog,
+      dom.settingsDialog,
+      dom.confirmDialog,
+      dom.insightDialog,
+      dom.goalDetailDialog,
+    ].forEach((dialog) => {
       dialog.addEventListener("click", handleDialogBackdropClick);
+    });
+
+    window.addEventListener("resize", () => {
+      if (dom.insightDialog.open && ui.currentInsight) {
+        window.requestAnimationFrame(() => renderInsightChart(ui.currentInsight));
+      }
     });
 
     dom.confirmDialog.addEventListener("close", () => {
