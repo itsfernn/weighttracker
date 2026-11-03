@@ -1,4 +1,4 @@
-const CACHE_NAME = "weighline-shell-v3";
+const CACHE_NAME = "weighline-shell-v4";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -6,10 +6,10 @@ const APP_SHELL = [
   "./app.js",
   "./favicon.svg",
   "./manifest.webmanifest",
-  "./icons/icon-192.png",
-  "./icons/icon-512.png",
-  "./icons/maskable-512.png",
-  "./icons/apple-touch-icon.png",
+  "./icons/weighline-192.png",
+  "./icons/weighline-512.png",
+  "./icons/weighline-maskable-512.png",
+  "./icons/weighline-apple-touch.png",
 ];
 
 self.addEventListener("install", (event) => {
