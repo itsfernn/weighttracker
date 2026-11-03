@@ -9,14 +9,10 @@ All data stays in the browser using `localStorage`. There is no account, server,
 - Fast weigh-in entry with the current date and time prefilled
 - Optional body fat percentage and notes on every entry
 - Weight and body fat trend charts using Monday-to-Sunday weekly averages
-- A regression trend line and recent weekly momentum
 - Time ranges from 4 weeks to all time
 - Goal weight, target body fat, and target date
-- Progress, remaining distance, required weekly pace, and on-track guidance
-- Goal projections for BMI, body fat, and FFMI
+- Progress, remaining distance, and required weekly pace
 - BMI, body fat, lean body mass, fat mass, FFMI, and normalized FFMI
-- Clickable metric details with reference ranges and historical charts
-- Optional male, female, or general reference ranges for body composition context
 - Edit and delete past weigh-ins
 - CSV import and export for backups or moving between browsers
 - Metric and imperial units
@@ -65,10 +61,8 @@ Import merges new rows into existing data and skips duplicate timestamps. The im
 - **FFMI** = lean body mass / height in meters squared
 - **Normalized FFMI** = FFMI + 6.1 × (1.8 − height in meters)
 - **Weekly average** = the mean of all weight or body fat readings from Monday through Sunday
-- **Recent pace** = a linear regression over the last 28 days of weigh-ins, reported in kg or lb per week
-- **Projected body fat at goal** = 1 − (current lean mass / target weight)
 
-The goal view compares the weekly pace needed to hit your target date with your recent pace. Pace bands use general fitness guidance: roughly 0.25–1% of body weight per week for weight loss and 0.1–0.5% per week for weight gain. These are not medical recommendations. Context ranges are general fitness references and can vary by sex, age, training history, and measurement method.
+BMI is a broad population measure and does not account for body composition. Use the trend and body composition metrics together.
 
 ## Privacy and backups
 
