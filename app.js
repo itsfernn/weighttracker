@@ -33,6 +33,8 @@
     goalProgressBar: document.getElementById("goalProgressBar"),
     goalProgressLabel: document.getElementById("goalProgressLabel"),
     goalFoot: document.getElementById("goalFoot"),
+    goalDivider: document.getElementById("goalDivider"),
+    goalBodyFatRow: document.getElementById("goalBodyFatRow"),
     goalBodyFatValue: document.getElementById("goalBodyFatValue"),
     goalBodyFatNote: document.getElementById("goalBodyFatNote"),
     chartSubtitle: document.getElementById("chartSubtitle"),
@@ -56,23 +58,12 @@
     bmiScale: document.getElementById("bmiScale"),
     bodyFatTag: document.getElementById("bodyFatTag"),
     bodyFatScale: document.getElementById("bodyFatScale"),
+    lbmTag: document.getElementById("lbmTag"),
+    lbmScale: document.getElementById("lbmScale"),
     ffmiValue: document.getElementById("ffmiValue"),
     ffmiTag: document.getElementById("ffmiTag"),
     ffmiScale: document.getElementById("ffmiScale"),
     ffmiFoot: document.getElementById("ffmiFoot"),
-    metricDialog: document.getElementById("metricDialog"),
-    metricDialogKicker: document.getElementById("metricDialogKicker"),
-    metricDialogTitle: document.getElementById("metricDialogTitle"),
-    metricDialogSubtitle: document.getElementById("metricDialogSubtitle"),
-    metricDialogValue: document.getElementById("metricDialogValue"),
-    metricDialogUnit: document.getElementById("metricDialogUnit"),
-    metricDialogTag: document.getElementById("metricDialogTag"),
-    metricDialogDescription: document.getElementById("metricDialogDescription"),
-    metricDialogMeta: document.getElementById("metricDialogMeta"),
-    metricDialogChartWrap: document.getElementById("metricDialogChartWrap"),
-    metricDialogChart: document.getElementById("metricDialogChart"),
-    metricDialogEmpty: document.getElementById("metricDialogEmpty"),
-    metricDialogFacts: document.getElementById("metricDialogFacts"),
     historyHeading: document.getElementById("historyHeading"),
     historySubtitle: document.getElementById("historySubtitle"),
     historyList: document.getElementById("historyList"),
@@ -129,7 +120,6 @@
     editingId: null,
     settingsUnit: "metric",
     settingsCanonical: { heightCm: null, goalWeightKg: null },
-    metricDetail: null,
     pendingConfirm: null,
   };
 
@@ -479,7 +469,7 @@
     const ffmi =
       leanMassKg !== null && heightM ? leanMassKg / (heightM * heightM) : null;
     const normalizedFfmi =
-      ffmi !== null && heightM ? ffmi + 6.3 * (1.8 - heightM) : null;
+      ffmi !== null && heightM ? ffmi + 6.1 * (1.8 - heightM) : null;
 
     return {
       latest,
@@ -627,7 +617,11 @@
       .join("")}</div><span class="metric-scale-marker" style="left:${marker.toFixed(2)}%"></span></div>`;
   }
 
-
+  function renderCompositionScale(element, leanPercent, fatPercent) {
+    if (!element) return;
+    element.hidden = false;
+    element.innerHTML = `<div class="metric-scale-track"><div class="metric-scale-bands"><span class="metric-scale-band is-good" style="width:${leanPercent.toFixed(1)}%"></span><span class="metric-scale-band is-warm" style="width:${fatPercent.toFixed(1)}%"></span></div></div>`;
+  }
 
   function trendMarkup(delta, unit, suffix) {
     if (Math.abs(delta) < 0.05) {
@@ -740,6 +734,8 @@
       const targetBodyFat = state.goal.bodyFatPct;
       dom.goalValue.textContent = formatNumber(toDisplayWeight(targetWeight), 1);
       dom.goalDate.textContent = state.goal.date ? formatGoalDate(state.goal.date) : "No deadline";
+      dom.goalDivider.hidden = false;
+      dom.goalBodyFatRow.hidden = false;
 
       if (targetBodyFat !== null) {
         dom.goalBodyFatValue.textContent = formatNumber(targetBodyFat, 1);
@@ -793,6 +789,8 @@
       dom.goalValue.textContent = "—";
       dom.goalDate.textContent = "Not set";
       dom.goalProgressWrap.hidden = true;
+      dom.goalDivider.hidden = true;
+      dom.goalBodyFatRow.hidden = true;
       dom.goalFoot.textContent = "Set a target weight in settings.";
     }
   }
@@ -844,12 +842,20 @@
     }
 
     if (metrics.leanMassKg !== null) {
+      const leanPercent = 100 - metrics.bodyFatPct;
       dom.lbmValue.textContent = formatNumber(toDisplayWeight(metrics.leanMassKg), 1);
+      setMetricTag(dom.lbmTag, {
+        label: `${formatNumber(leanPercent, 0)}% of weight`,
+        tone: "neutral",
+      });
+      renderCompositionScale(dom.lbmScale, leanPercent, metrics.bodyFatPct);
       dom.lbmFoot.textContent = metrics.fatMassKg !== null
         ? `Fat mass ${formatNumber(toDisplayWeight(metrics.fatMassKg), 1)} ${unit}`
         : "Calculated from your latest body fat reading.";
     } else {
       dom.lbmValue.textContent = "—";
+      setMetricTag(dom.lbmTag, null);
+      dom.lbmScale.hidden = true;
       dom.lbmFoot.textContent = "Requires a body fat reading.";
     }
 
@@ -859,11 +865,11 @@
         const context = getFfmiContext(metrics.ffmi, sex);
         setMetricTag(dom.ffmiTag, context);
         renderMetricScale(dom.ffmiScale, context, metrics.ffmi);
-        dom.ffmiFoot.textContent = `Adj. FFMI ${formatNumber(metrics.normalizedFfmi, 1)} · ${context.description}`;
+        dom.ffmiFoot.textContent = `Adjusted ${formatNumber(metrics.normalizedFfmi, 1)} · ${context.description}`;
       } else {
         setMetricTag(dom.ffmiTag, { label: "Set sex", tone: "neutral" });
         renderMetricScale(dom.ffmiScale, null);
-        dom.ffmiFoot.textContent = `Adj. FFMI ${formatNumber(metrics.normalizedFfmi, 1)} · set a reference sex in settings for context.`;
+        dom.ffmiFoot.textContent = `Adjusted ${formatNumber(metrics.normalizedFfmi, 1)} · set a reference sex in settings for context.`;
       }
     } else {
       dom.ffmiValue.textContent = "—";
@@ -871,268 +877,6 @@
       renderMetricScale(dom.ffmiScale, null);
       dom.ffmiFoot.textContent = "Requires body fat and height.";
     }
-  }
-
-  function getMetricDetailConfig(metric) {
-    const metrics = calculateMetrics();
-    const unit = weightUnit();
-    const heightM = metrics.heightCm ? metrics.heightCm / 100 : null;
-    const chronological = [...state.entries].sort(
-      (a, b) => new Date(a.at) - new Date(b.at),
-    );
-
-    if (metric === "bmi") {
-      const series = heightM
-        ? chronological.map((entry) => ({
-            at: new Date(entry.at),
-            value: entry.weightKg / (heightM * heightM),
-          }))
-        : [];
-      const context = metrics.bmi !== null ? getBmiContext(metrics.bmi) : null;
-      return {
-        metric,
-        kicker: "Body mass index",
-        title: "BMI",
-        subtitle: "A population-level screen based on weight and height.",
-        value: metrics.bmi !== null ? formatNumber(metrics.bmi, 1) : "—",
-        unit: "kg/m²",
-        tag: context,
-        description: context
-          ? `${context.description} BMI is a broad screen and doesn't distinguish muscle from fat.`
-          : "Add your height in settings, then log a weigh-in to see your BMI history.",
-        series,
-        formatValue: (value) => formatNumber(value, 1),
-        changeUnit: "BMI",
-        emptyCopy: "Add your height and log a weigh-in to start the BMI chart.",
-      };
-    }
-
-    if (metric === "bodyFat") {
-      const series = chronological
-        .filter((entry) => entry.bodyFatPct !== null)
-        .map((entry) => ({ at: new Date(entry.at), value: entry.bodyFatPct }));
-      const context = metrics.bodyFatPct !== null
-        ? getBodyFatContext(metrics.bodyFatPct, state.profile.referenceSex)
-        : null;
-      return {
-        metric,
-        kicker: "Body composition",
-        title: "Body fat",
-        subtitle: "Your recorded body fat readings over time.",
-        value: metrics.bodyFatPct !== null ? formatNumber(metrics.bodyFatPct, 1) : "—",
-        unit: "%",
-        tag: context || (metrics.bodyFatPct !== null ? { label: "Set sex", tone: "neutral" } : null),
-        description: context
-          ? context.description
-          : "Set a reference sex in settings to add body fat context.",
-        series,
-        formatValue: (value) => `${formatNumber(value, 1)}%`,
-        changeUnit: "pts",
-        emptyCopy: "Add a body fat percentage to a weigh-in to start this chart.",
-      };
-    }
-
-    if (metric === "lbm") {
-      const series = chronological
-        .filter((entry) => entry.bodyFatPct !== null)
-        .map((entry) => ({
-          at: new Date(entry.at),
-          value: toDisplayWeight(entry.weightKg * (1 - entry.bodyFatPct / 100)),
-        }));
-      return {
-        metric,
-        kicker: "Body composition",
-        title: "Lean body mass",
-        subtitle: "Everything in your body that isn't fat.",
-        value: metrics.leanMassKg !== null
-          ? formatNumber(toDisplayWeight(metrics.leanMassKg), 1)
-          : "—",
-        unit,
-        tag: null,
-        description: metrics.leanMassKg !== null
-          ? `Lean mass excludes fat mass. Your latest body fat reading puts fat mass at ${formatNumber(toDisplayWeight(metrics.fatMassKg), 1)} ${unit}.`
-          : "Add a body fat reading to a weigh-in to start the lean mass chart.",
-        series,
-        formatValue: (value) => `${formatNumber(value, 1)} ${unit}`,
-        changeUnit: unit,
-        emptyCopy: "Add body fat to a weigh-in to start this chart.",
-      };
-    }
-
-    const series =
-      heightM && metrics.heightCm !== null
-        ? chronological
-            .filter((entry) => entry.bodyFatPct !== null)
-            .map((entry) => {
-              const leanKg = entry.weightKg * (1 - entry.bodyFatPct / 100);
-              return { at: new Date(entry.at), value: leanKg / (heightM * heightM) };
-            })
-        : [];
-    const context = metrics.ffmi !== null
-      ? getFfmiContext(metrics.ffmi, state.profile.referenceSex)
-      : null;
-    return {
-      metric: "ffmi",
-      kicker: "Fat-free mass index",
-      title: "FFMI",
-      subtitle: "Lean mass relative to height, with height-adjusted context.",
-      value: metrics.ffmi !== null ? formatNumber(metrics.ffmi, 1) : "—",
-      unit: "kg/m²",
-      tag: context || (metrics.ffmi !== null ? { label: "Set sex", tone: "neutral" } : null),
-      description: context
-        ? `${context.description} Adjusted FFMI is ${formatNumber(metrics.normalizedFfmi, 1)}.`
-        : "Add body fat and height, then choose a reference sex for context.",
-      series,
-      formatValue: (value) => formatNumber(value, 1),
-      changeUnit: "FFMI",
-      emptyCopy: "Add body fat and height to start the FFMI chart.",
-    };
-  }
-
-  function renderMetricHistoryChart(config) {
-    const width = Math.max(260, Math.round(dom.metricDialogChart.getBoundingClientRect().width));
-    const height = Math.max(150, Math.round(dom.metricDialogChart.getBoundingClientRect().height));
-    const series = config.series;
-
-    if (!series.length) {
-      dom.metricDialogChart.hidden = true;
-      dom.metricDialogEmpty.hidden = false;
-      dom.metricDialogEmpty.textContent = config.emptyCopy;
-      dom.metricDialogMeta.textContent = "No readings yet";
-      dom.metricDialogFacts.innerHTML = "";
-      dom.metricDialogFacts.hidden = true;
-      return;
-    }
-
-    dom.metricDialogChart.hidden = false;
-    dom.metricDialogEmpty.hidden = true;
-    dom.metricDialogFacts.hidden = false;
-
-    const margins = { top: 12, right: 14, bottom: 23, left: 41 };
-    const plot = {
-      left: margins.left,
-      right: width - margins.right,
-      top: margins.top,
-      bottom: height - margins.bottom,
-      width: width - margins.left - margins.right,
-      height: height - margins.top - margins.bottom,
-    };
-
-    let start = series[0].at;
-    let end = series.at(-1).at;
-    if (end.getTime() - start.getTime() < 7 * DAY_MS) {
-      const middle = new Date((start.getTime() + end.getTime()) / 2);
-      start = new Date(middle.getTime() - 4 * DAY_MS);
-      end = new Date(middle.getTime() + 4 * DAY_MS);
-    }
-    let dataMin = Math.min(...series.map((point) => point.value));
-    let dataMax = Math.max(...series.map((point) => point.value));
-    if (dataMax - dataMin < 0.2) {
-      dataMin -= 0.7;
-      dataMax += 0.7;
-    }
-    const padding = (dataMax - dataMin) * 0.12;
-    let axisMin = dataMin - padding;
-    let axisMax = dataMax + padding;
-    const step = niceStep((axisMax - axisMin) / 3);
-    axisMin = Math.floor(axisMin / step) * step;
-    axisMax = Math.ceil(axisMax / step) * step;
-
-    const xScale = (date) =>
-      plot.left +
-      ((date.getTime() - start.getTime()) / Math.max(1, end.getTime() - start.getTime())) *
-        plot.width;
-    const yScale = (value) =>
-      plot.bottom - ((value - axisMin) / Math.max(0.0001, axisMax - axisMin)) * plot.height;
-
-    const parts = [
-      '<defs><linearGradient id="metricHistoryArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" style="stop-color:var(--brand);stop-opacity:.2"></stop><stop offset="100%" style="stop-color:var(--brand);stop-opacity:0"></stop></linearGradient></defs>',
-    ];
-
-    for (let i = 0; i <= 3; i += 1) {
-      const value = axisMin + ((axisMax - axisMin) * i) / 3;
-      const y = yScale(value);
-      parts.push(
-        `<line class="metric-history-grid" x1="${plot.left}" y1="${y.toFixed(1)}" x2="${plot.right}" y2="${y.toFixed(1)}"></line>`,
-        `<text class="metric-history-axis" x="${plot.left - 7}" y="${(y + 3).toFixed(1)}" text-anchor="end">${formatNumber(value, axisMax - axisMin < 5 ? 1 : 0)}</text>`,
-      );
-    }
-
-    for (let i = 0; i < 3; i += 1) {
-      const ratio = i / 2;
-      const date = new Date(start.getTime() + (end.getTime() - start.getTime()) * ratio);
-      const x = plot.left + plot.width * ratio;
-      parts.push(
-        `<text class="metric-history-axis" x="${x.toFixed(1)}" y="${height - 6}" text-anchor="${i === 0 ? "start" : i === 2 ? "end" : "middle"}">${formatDateShort(date)}</text>`,
-      );
-    }
-
-    const points = series.map((point) => ({
-      ...point,
-      x: xScale(point.at),
-      y: yScale(point.value),
-    }));
-    if (points.length > 1) {
-      const line = points
-        .map((point, index) => `${index === 0 ? "M" : "L"}${point.x.toFixed(1)} ${point.y.toFixed(1)}`)
-        .join(" ");
-      const area = `${line} L${points.at(-1).x.toFixed(1)} ${plot.bottom} L${points[0].x.toFixed(1)} ${plot.bottom} Z`;
-      parts.push(
-        `<path class="metric-history-area" d="${area}"></path>`,
-        `<path class="metric-history-line" d="${line}"></path>`,
-      );
-    }
-
-    const stride = points.length > 60 ? Math.ceil(points.length / 60) : 1;
-    points.forEach((point, index) => {
-      if (index !== points.length - 1 && index % stride !== 0) return;
-      parts.push(
-        `<circle class="${index === points.length - 1 ? "metric-history-dot-latest" : "metric-history-dot"}" cx="${point.x.toFixed(1)}" cy="${point.y.toFixed(1)}" r="${index === points.length - 1 ? 4 : 2.4}"></circle>`,
-      );
-    });
-
-    dom.metricDialogChart.setAttribute("viewBox", `0 0 ${width} ${height}`);
-    dom.metricDialogChart.setAttribute(
-      "aria-label",
-      `${config.title} history from ${formatDateShort(series[0].at)} to ${formatDateShort(series.at(-1).at)}`,
-    );
-    dom.metricDialogChart.innerHTML = parts.join("");
-
-    const first = series[0];
-    const last = series.at(-1);
-    const days = Math.max(1, Math.round((last.at - first.at) / DAY_MS));
-    const change = last.value - first.value;
-    const changeText =
-      series.length > 1
-        ? `${change < 0 ? "−" : change > 0 ? "+" : ""}${formatNumber(Math.abs(change), 1)} ${config.changeUnit}`
-        : "—";
-    dom.metricDialogMeta.textContent = `${pluralize(series.length, "reading")} · ${days} days`;
-    dom.metricDialogFacts.innerHTML = [
-      { label: "First", value: config.formatValue(first.value), hint: formatDateShort(first.at) },
-      { label: "Latest", value: config.formatValue(last.value), hint: formatDateShort(last.at) },
-      { label: "Change", value: changeText, hint: series.length > 1 ? `over ${days} days` : "Needs another reading" },
-      { label: "Readings", value: String(series.length), hint: "In this chart" },
-    ]
-      .map(
-        (fact) =>
-          `<div class="metric-fact"><span>${escapeHtml(fact.label)}</span><strong>${escapeHtml(fact.value)}</strong><em>${escapeHtml(fact.hint)}</em></div>`,
-      )
-      .join("");
-  }
-
-  function openMetricDetail(metric) {
-    const config = getMetricDetailConfig(metric);
-    ui.metricDetail = config;
-    dom.metricDialogKicker.textContent = config.kicker;
-    dom.metricDialogTitle.textContent = config.title;
-    dom.metricDialogSubtitle.textContent = config.subtitle;
-    dom.metricDialogValue.textContent = config.value;
-    dom.metricDialogUnit.textContent = config.unit;
-    setMetricTag(dom.metricDialogTag, config.tag);
-    dom.metricDialogDescription.textContent = config.description;
-    dom.metricDialog.scrollTop = 0;
-    dom.metricDialog.showModal();
-    window.requestAnimationFrame(() => renderMetricHistoryChart(config));
   }
 
   function getChartConfig() {
@@ -2330,23 +2074,13 @@
     dom.historyList.addEventListener("click", handleHistoryClick);
     dom.fullLogList.addEventListener("click", handleHistoryClick);
     dom.openFullLogButton.addEventListener("click", openFullLog);
-    document.querySelectorAll("[data-stat-detail]").forEach((card) => {
-      const open = () => openMetricDetail(card.dataset.statDetail);
-      card.addEventListener("click", open);
-      card.addEventListener("keydown", (event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          open();
-        }
-      });
-    });
 
     dom.settingsForm
       .querySelectorAll('input[name="unitSystem"]')
       .forEach((radio) => radio.addEventListener("change", handleSettingsUnitChange));
 
     document.addEventListener("click", handleGlobalClick);
-    [dom.entryDialog, dom.settingsDialog, dom.confirmDialog, dom.logDialog, dom.metricDialog].forEach((dialog) => {
+    [dom.entryDialog, dom.settingsDialog, dom.confirmDialog, dom.logDialog].forEach((dialog) => {
       dialog.addEventListener("click", handleDialogBackdropClick);
     });
 
@@ -2384,12 +2118,6 @@
       }
     });
     chartResizeObserver.observe(dom.chartStage);
-
-    window.addEventListener("resize", () => {
-      if (dom.metricDialog.open && ui.metricDetail) {
-        window.requestAnimationFrame(() => renderMetricHistoryChart(ui.metricDetail));
-      }
-    });
 
     window.addEventListener("storage", (event) => {
       if (event.key === THEME_KEY && event.newValue) {
