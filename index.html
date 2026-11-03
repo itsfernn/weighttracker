@@ -210,31 +210,32 @@
         </div>
       </div>
 
-      <div class="metric-grid">
-        <article class="card metric-card">
-          <div class="metric-icon"><svg class="icon" aria-hidden="true"><use href="#i-scale"/></svg></div>
-          <div class="metric-body">
-            <div class="metric-label-row"><div class="metric-label">BMI</div><span class="metric-tag" id="bmiTag" hidden></span></div>
-            <div class="metric-value-row"><span class="metric-value" id="bmiValue">—</span><span class="metric-unit" id="bmiUnit">kg/m²</span></div>
-            <div class="metric-scale" id="bmiScale" hidden></div>
+      <div class="card composition-card">
+        <div class="composition-row">
+          <div class="composition-name">
+            <span class="metric-label">BMI</span>
+            <span class="metric-tag" id="bmiTag" hidden></span>
           </div>
-        </article>
-        <article class="card metric-card">
-          <div class="metric-icon"><svg class="icon" aria-hidden="true"><use href="#i-pulse"/></svg></div>
-          <div class="metric-body">
-            <div class="metric-label-row"><div class="metric-label">Body fat</div><span class="metric-tag" id="bodyFatTag" hidden></span></div>
-            <div class="metric-value-row"><span class="metric-value" id="metricBodyFatValue">—</span><span class="metric-unit">%</span></div>
-            <div class="metric-scale" id="bodyFatScale" hidden></div>
+          <div class="metric-scale" id="bmiScale" hidden></div>
+          <div class="composition-value"><span class="metric-value" id="bmiValue">—</span><span class="metric-unit" id="bmiUnit">kg/m²</span></div>
+        </div>
+        <div class="composition-row">
+          <div class="composition-name">
+            <span class="metric-label">Body fat</span>
+            <span class="metric-tag" id="bodyFatTag" hidden></span>
           </div>
-        </article>
-        <article class="card metric-card metric-card-ffmi">
-          <div class="metric-icon"><svg class="icon" aria-hidden="true"><use href="#i-target"/></svg></div>
-          <div class="metric-body">
-            <div class="metric-label-row"><div class="metric-label" id="ffmiLabel">FFMI</div><span class="metric-tag" id="ffmiTag" hidden></span></div>
-            <div class="metric-value-row"><span class="metric-value" id="ffmiValue">—</span><span class="metric-unit">kg/m²</span></div>
-            <div class="metric-scale" id="ffmiScale" hidden></div>
+          <div class="metric-scale" id="bodyFatScale" hidden></div>
+          <div class="composition-value"><span class="metric-value" id="metricBodyFatValue">—</span><span class="metric-unit">%</span></div>
+        </div>
+        <div class="composition-row">
+          <div class="composition-name">
+            <span class="metric-label" id="ffmiLabel">FFMI</span>
+            <span class="metric-tag" id="ffmiTag" hidden></span>
           </div>
-        </article>
+          <div class="metric-scale" id="ffmiScale" hidden></div>
+          <div class="composition-value"><span class="metric-value" id="ffmiValue">—</span><span class="metric-unit">kg/m²</span></div>
+        </div>
+      </div>
       </div>
     </section>
 
