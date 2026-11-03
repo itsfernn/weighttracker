@@ -1094,8 +1094,53 @@ svg {
 }
 
 .metric-card {
+  position: relative;
   padding: 18px;
   border-radius: var(--radius-lg);
+  transition: border-color var(--transition), background var(--transition), transform var(--transition), box-shadow var(--transition);
+}
+
+.metric-card-action {
+  cursor: pointer;
+}
+
+.metric-card-action:hover,
+.metric-card-action:focus-visible {
+  border-color: var(--border-strong);
+  background:
+    linear-gradient(145deg, var(--highlight), transparent 38%),
+    var(--surface-raised);
+  box-shadow: 0 24px 55px -42px rgba(0, 0, 0, .8);
+  transform: translateY(-2px);
+}
+
+.metric-open {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--faint);
+  background: var(--surface-inset);
+  opacity: .6;
+  transition: color var(--transition), background var(--transition), border-color var(--transition), opacity var(--transition);
+}
+
+.metric-card-action:hover .metric-open,
+.metric-card-action:focus-visible .metric-open {
+  opacity: 1;
+  color: var(--brand);
+  border-color: var(--brand-line);
+  background: var(--brand-soft);
+}
+
+.metric-open .icon {
+  width: 13px;
+  height: 13px;
 }
 
 .metric-icon {
@@ -1838,6 +1883,188 @@ svg {
   justify-content: center;
 }
 
+.metric-dialog {
+  width: min(720px, calc(100% - 32px));
+}
+
+.metric-dialog-content {
+  padding: 27px;
+}
+
+.metric-dialog-hero {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.metric-dialog-value {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  color: var(--text-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+.metric-dialog-value > span:first-child {
+  font-size: clamp(2.5rem, 7vw, 3.4rem);
+  font-weight: 650;
+  letter-spacing: -.06em;
+  line-height: 1;
+}
+
+.metric-dialog-value > span:last-child {
+  color: var(--faint);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.metric-dialog-description {
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.65;
+}
+
+.metric-dialog-chart-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.metric-dialog-chart-head .section-kicker {
+  margin-bottom: 3px;
+  font-size: 9.5px;
+}
+
+.metric-dialog-chart-head h3 {
+  font-size: 15px;
+  font-weight: 640;
+  letter-spacing: -.025em;
+}
+
+.metric-dialog-chart-head > span {
+  max-width: 220px;
+  color: var(--faint);
+  font-size: 10px;
+  line-height: 1.45;
+  text-align: right;
+}
+
+.metric-dialog-chart-wrap {
+  position: relative;
+  height: 220px;
+  min-height: 160px;
+  margin-top: 9px;
+  padding: 5px 4px 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-inset);
+}
+
+.metric-dialog-chart {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.metric-dialog-chart .metric-history-grid {
+  stroke: var(--grid);
+  stroke-width: 1;
+}
+
+.metric-dialog-chart .metric-history-axis {
+  fill: var(--faint);
+  font-family: var(--font-sans);
+  font-size: 9.5px;
+  font-weight: 500;
+}
+
+.metric-dialog-chart .metric-history-area {
+  fill: url(#metricHistoryArea);
+}
+
+.metric-dialog-chart .metric-history-line {
+  fill: none;
+  stroke: var(--brand);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.metric-dialog-chart .metric-history-dot {
+  fill: var(--brand);
+  stroke: var(--surface-inset);
+  stroke-width: 1.5;
+}
+
+.metric-dialog-chart .metric-history-dot-latest {
+  fill: var(--brand-strong);
+  stroke: var(--surface-inset);
+  stroke-width: 2.5;
+}
+
+.metric-dialog-empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  color: var(--muted);
+  font-size: 11.5px;
+  text-align: center;
+}
+
+.metric-dialog-empty[hidden] {
+  display: none;
+}
+
+.metric-dialog-facts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  margin-top: 16px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--border);
+}
+
+.metric-fact {
+  padding: 11px 12px;
+  background: var(--surface);
+}
+
+.metric-fact span {
+  display: block;
+  color: var(--faint);
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+
+.metric-fact strong {
+  display: block;
+  margin-top: 2px;
+  color: var(--text);
+  font-size: 12.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.metric-fact em {
+  display: block;
+  margin-top: 2px;
+  color: var(--faint);
+  font-size: 9.5px;
+  font-style: normal;
+  line-height: 1.4;
+}
+
 .log-dialog {
   width: min(980px, calc(100% - 32px));
   height: min(86vh, 850px);
@@ -1894,6 +2121,22 @@ svg {
 
   .log-content {
     padding: 20px 16px calc(14px + env(safe-area-inset-bottom));
+  }
+
+  .metric-dialog-content {
+    padding: 24px 20px calc(20px + env(safe-area-inset-bottom));
+  }
+
+  .metric-dialog-chart-wrap {
+    height: 190px;
+  }
+
+  .metric-dialog-chart-head > span {
+    max-width: 135px;
+  }
+
+  .metric-dialog-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .full-log-scroll {

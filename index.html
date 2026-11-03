@@ -44,6 +44,7 @@
     <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></symbol>
     <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol>
     <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+    <symbol id="i-arrow-up-right" viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></symbol>
   </svg>
 
   <header class="topbar">
@@ -230,8 +231,9 @@
       </div>
 
       <div class="metric-grid">
-        <article class="card metric-card">
+        <article class="card metric-card metric-card-action" data-stat-detail="bmi" tabindex="0" role="button" aria-label="View BMI history">
           <div class="metric-icon"><svg class="icon" aria-hidden="true"><use href="#i-scale"/></svg></div>
+          <span class="metric-open" aria-hidden="true"><svg class="icon"><use href="#i-arrow-up-right"/></svg></span>
           <div class="metric-body">
             <div class="metric-label-row"><div class="metric-label">BMI</div><span class="metric-tag" id="bmiTag" hidden></span></div>
             <div class="metric-value-row"><span class="metric-value" id="bmiValue">—</span><span class="metric-unit" id="bmiUnit">kg/m²</span></div>
@@ -239,8 +241,9 @@
             <div class="metric-foot" id="bmiFoot">Add your height in settings.</div>
           </div>
         </article>
-        <article class="card metric-card">
+        <article class="card metric-card metric-card-action" data-stat-detail="bodyFat" tabindex="0" role="button" aria-label="View body fat history">
           <div class="metric-icon"><svg class="icon" aria-hidden="true"><use href="#i-pulse"/></svg></div>
+          <span class="metric-open" aria-hidden="true"><svg class="icon"><use href="#i-arrow-up-right"/></svg></span>
           <div class="metric-body">
             <div class="metric-label-row"><div class="metric-label">Body fat</div><span class="metric-tag" id="bodyFatTag" hidden></span></div>
             <div class="metric-value-row"><span class="metric-value" id="metricBodyFatValue">—</span><span class="metric-unit">%</span></div>
@@ -248,16 +251,18 @@
             <div class="metric-foot" id="metricBodyFatFoot">Log a body fat reading to track it.</div>
           </div>
         </article>
-        <article class="card metric-card">
+        <article class="card metric-card metric-card-action" data-stat-detail="lbm" tabindex="0" role="button" aria-label="View lean body mass history">
           <div class="metric-icon"><svg class="icon" aria-hidden="true"><use href="#i-activity"/></svg></div>
+          <span class="metric-open" aria-hidden="true"><svg class="icon"><use href="#i-arrow-up-right"/></svg></span>
           <div class="metric-body">
             <div class="metric-label-row"><div class="metric-label">Lean body mass</div></div>
             <div class="metric-value-row"><span class="metric-value" id="lbmValue">—</span><span class="metric-unit" id="lbmUnit">kg</span></div>
             <div class="metric-foot" id="lbmFoot">Requires a body fat reading.</div>
           </div>
         </article>
-        <article class="card metric-card metric-card-ffmi">
+        <article class="card metric-card metric-card-action metric-card-ffmi" data-stat-detail="ffmi" tabindex="0" role="button" aria-label="View FFMI history">
           <div class="metric-icon"><svg class="icon" aria-hidden="true"><use href="#i-target"/></svg></div>
+          <span class="metric-open" aria-hidden="true"><svg class="icon"><use href="#i-arrow-up-right"/></svg></span>
           <div class="metric-body">
             <div class="metric-label-row"><div class="metric-label">FFMI</div><span class="metric-tag" id="ffmiTag" hidden></span></div>
             <div class="metric-value-row"><span class="metric-value" id="ffmiValue">—</span><span class="metric-unit">kg/m²</span></div>
@@ -453,6 +458,42 @@
         </button>
       </div>
     </form>
+  </dialog>
+
+  <dialog class="modal metric-dialog" id="metricDialog" aria-labelledby="metricDialogTitle">
+    <div class="metric-dialog-content">
+      <div class="modal-header">
+        <div>
+          <p class="section-kicker" id="metricDialogKicker">Metric</p>
+          <h2 id="metricDialogTitle">BMI</h2>
+          <p class="modal-copy" id="metricDialogSubtitle"></p>
+        </div>
+        <button class="icon-button modal-close" type="button" data-close aria-label="Close">
+          <svg class="icon" aria-hidden="true"><use href="#i-close"/></svg>
+        </button>
+      </div>
+      <div class="metric-dialog-hero">
+        <div class="metric-dialog-value"><span id="metricDialogValue">—</span><span id="metricDialogUnit"></span></div>
+        <span class="metric-tag" id="metricDialogTag" hidden></span>
+      </div>
+      <p class="metric-dialog-description" id="metricDialogDescription"></p>
+      <div class="metric-dialog-chart-head">
+        <div>
+          <p class="section-kicker">History</p>
+          <h3>Progress over time</h3>
+        </div>
+        <span id="metricDialogMeta"></span>
+      </div>
+      <div class="metric-dialog-chart-wrap" id="metricDialogChartWrap">
+        <svg class="metric-dialog-chart" id="metricDialogChart" role="img" aria-label="Metric history chart"></svg>
+        <div class="metric-dialog-empty" id="metricDialogEmpty" hidden></div>
+      </div>
+      <div class="metric-dialog-facts" id="metricDialogFacts"></div>
+      <div class="modal-footer">
+        <span class="footer-spacer"></span>
+        <button class="button button-secondary" type="button" data-close>Close</button>
+      </div>
+    </div>
   </dialog>
 
   <dialog class="modal log-dialog" id="logDialog" aria-labelledby="logDialogTitle">
