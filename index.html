@@ -98,20 +98,20 @@
           <span class="stat-label"><svg class="icon" aria-hidden="true"><use href="#i-scale"/></svg>Current</span>
           <span class="stat-meta" id="currentDate">No data</span>
         </div>
-        <div class="overview-primary">
-          <div class="stat-value-row">
-            <span class="stat-value" id="currentWeight">—</span>
-            <span class="stat-unit" id="currentWeightUnit">kg</span>
+        <div class="overview-split">
+          <div class="overview-main">
+            <span class="overview-metric-label">Weight</span>
+            <div class="stat-value-row">
+              <span class="stat-value" id="currentWeight">—</span>
+              <span class="stat-unit" id="currentWeightUnit">kg</span>
+            </div>
+            <span class="overview-delta" id="currentDelta">Log your first weigh-in to get started.</span>
           </div>
-          <span class="overview-delta" id="currentDelta">Log your first weigh-in to get started.</span>
-        </div>
-        <div class="overview-divider"></div>
-        <div class="overview-secondary">
-          <div>
-            <span class="overview-secondary-label">Body fat</span>
-            <div class="overview-secondary-value"><strong id="currentBodyFatValue">—</strong><span>%</span></div>
+          <div class="overview-side">
+            <span class="overview-metric-label">Body fat</span>
+            <div class="overview-side-value"><strong id="currentBodyFatValue">—</strong><span>%</span></div>
+            <span class="overview-side-note" id="currentBodyFatNote">Not measured</span>
           </div>
-          <span class="overview-secondary-note" id="currentBodyFatNote">Not measured</span>
         </div>
       </article>
 
@@ -120,20 +120,20 @@
           <span class="stat-label"><svg class="icon" aria-hidden="true"><use href="#i-activity"/></svg>Weekly average</span>
           <span class="stat-meta" id="weeklyDate">No data</span>
         </div>
-        <div class="overview-primary">
-          <div class="stat-value-row">
-            <span class="stat-value" id="weeklyAverage">—</span>
-            <span class="stat-unit" id="weeklyAverageUnit">kg</span>
+        <div class="overview-split">
+          <div class="overview-main">
+            <span class="overview-metric-label">Weight</span>
+            <div class="stat-value-row">
+              <span class="stat-value" id="weeklyAverage">—</span>
+              <span class="stat-unit" id="weeklyAverageUnit">kg</span>
+            </div>
+            <span class="overview-delta" id="weeklyDelta">Weekly averages appear after your first entry.</span>
           </div>
-          <span class="overview-delta" id="weeklyDelta">Weekly averages appear after your first entry.</span>
-        </div>
-        <div class="overview-divider"></div>
-        <div class="overview-secondary">
-          <div>
-            <span class="overview-secondary-label">Body fat avg</span>
-            <div class="overview-secondary-value"><strong id="weeklyBodyFatValue">—</strong><span>%</span></div>
+          <div class="overview-side">
+            <span class="overview-metric-label">Body fat</span>
+            <div class="overview-side-value"><strong id="weeklyBodyFatValue">—</strong><span>%</span></div>
+            <span class="overview-side-note" id="weeklyBodyFatNote">No body fat readings</span>
           </div>
-          <span class="overview-secondary-note" id="weeklyBodyFatNote">No body fat readings</span>
         </div>
       </article>
 
@@ -142,25 +142,25 @@
           <span class="stat-label"><svg class="icon" aria-hidden="true"><use href="#i-target"/></svg>Goal</span>
           <span class="stat-meta" id="goalDate">Not set</span>
         </div>
-        <div class="overview-primary">
-          <div class="stat-value-row">
-            <span class="stat-value" id="goalValue">—</span>
-            <span class="stat-unit" id="goalUnit">kg</span>
+        <div class="overview-split">
+          <div class="overview-main">
+            <span class="overview-metric-label">Target weight</span>
+            <div class="stat-value-row">
+              <span class="stat-value" id="goalValue">—</span>
+              <span class="stat-unit" id="goalUnit">kg</span>
+            </div>
           </div>
-          <div class="goal-progress" id="goalProgressWrap" hidden>
-            <div class="goal-progress-track"><span id="goalProgressBar"></span></div>
-            <span class="goal-progress-label" id="goalProgressLabel">0%</span>
+          <div class="overview-side">
+            <span class="overview-metric-label">Body fat goal</span>
+            <div class="overview-side-value"><strong id="goalBodyFatValue">—</strong><span>%</span></div>
+            <span class="overview-side-note" id="goalBodyFatNote">No body fat target</span>
           </div>
-          <span class="overview-delta" id="goalFoot">Set a target weight in settings.</span>
         </div>
-        <div class="overview-divider" id="goalDivider" hidden></div>
-        <div class="overview-secondary" id="goalBodyFatRow" hidden>
-          <div>
-            <span class="overview-secondary-label">Body fat goal</span>
-            <div class="overview-secondary-value"><strong id="goalBodyFatValue">—</strong><span>%</span></div>
-          </div>
-          <span class="overview-secondary-note" id="goalBodyFatNote">No body fat target</span>
+        <div class="goal-progress" id="goalProgressWrap" hidden>
+          <div class="goal-progress-track"><span id="goalProgressBar"></span></div>
+          <span class="goal-progress-label" id="goalProgressLabel">0%</span>
         </div>
+        <span class="overview-delta" id="goalFoot">Set a target weight in settings.</span>
       </article>
     </section>
 
@@ -251,9 +251,8 @@
         <article class="card metric-card">
           <div class="metric-icon"><svg class="icon" aria-hidden="true"><use href="#i-activity"/></svg></div>
           <div class="metric-body">
-            <div class="metric-label-row"><div class="metric-label">Lean body mass</div><span class="metric-tag" id="lbmTag" hidden></span></div>
+            <div class="metric-label-row"><div class="metric-label">Lean body mass</div></div>
             <div class="metric-value-row"><span class="metric-value" id="lbmValue">—</span><span class="metric-unit" id="lbmUnit">kg</span></div>
-            <div class="metric-scale" id="lbmScale" hidden></div>
             <div class="metric-foot" id="lbmFoot">Requires a body fat reading.</div>
           </div>
         </article>

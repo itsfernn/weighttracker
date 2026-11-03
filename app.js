@@ -33,8 +33,6 @@
     goalProgressBar: document.getElementById("goalProgressBar"),
     goalProgressLabel: document.getElementById("goalProgressLabel"),
     goalFoot: document.getElementById("goalFoot"),
-    goalDivider: document.getElementById("goalDivider"),
-    goalBodyFatRow: document.getElementById("goalBodyFatRow"),
     goalBodyFatValue: document.getElementById("goalBodyFatValue"),
     goalBodyFatNote: document.getElementById("goalBodyFatNote"),
     chartSubtitle: document.getElementById("chartSubtitle"),
@@ -58,8 +56,6 @@
     bmiScale: document.getElementById("bmiScale"),
     bodyFatTag: document.getElementById("bodyFatTag"),
     bodyFatScale: document.getElementById("bodyFatScale"),
-    lbmTag: document.getElementById("lbmTag"),
-    lbmScale: document.getElementById("lbmScale"),
     ffmiValue: document.getElementById("ffmiValue"),
     ffmiTag: document.getElementById("ffmiTag"),
     ffmiScale: document.getElementById("ffmiScale"),
@@ -469,7 +465,7 @@
     const ffmi =
       leanMassKg !== null && heightM ? leanMassKg / (heightM * heightM) : null;
     const normalizedFfmi =
-      ffmi !== null && heightM ? ffmi + 6.1 * (1.8 - heightM) : null;
+      ffmi !== null && heightM ? ffmi + 6.3 * (1.8 - heightM) : null;
 
     return {
       latest,
@@ -617,11 +613,7 @@
       .join("")}</div><span class="metric-scale-marker" style="left:${marker.toFixed(2)}%"></span></div>`;
   }
 
-  function renderCompositionScale(element, leanPercent, fatPercent) {
-    if (!element) return;
-    element.hidden = false;
-    element.innerHTML = `<div class="metric-scale-track"><div class="metric-scale-bands"><span class="metric-scale-band is-good" style="width:${leanPercent.toFixed(1)}%"></span><span class="metric-scale-band is-warm" style="width:${fatPercent.toFixed(1)}%"></span></div></div>`;
-  }
+
 
   function trendMarkup(delta, unit, suffix) {
     if (Math.abs(delta) < 0.05) {
@@ -734,8 +726,6 @@
       const targetBodyFat = state.goal.bodyFatPct;
       dom.goalValue.textContent = formatNumber(toDisplayWeight(targetWeight), 1);
       dom.goalDate.textContent = state.goal.date ? formatGoalDate(state.goal.date) : "No deadline";
-      dom.goalDivider.hidden = false;
-      dom.goalBodyFatRow.hidden = false;
 
       if (targetBodyFat !== null) {
         dom.goalBodyFatValue.textContent = formatNumber(targetBodyFat, 1);
@@ -789,8 +779,6 @@
       dom.goalValue.textContent = "—";
       dom.goalDate.textContent = "Not set";
       dom.goalProgressWrap.hidden = true;
-      dom.goalDivider.hidden = true;
-      dom.goalBodyFatRow.hidden = true;
       dom.goalFoot.textContent = "Set a target weight in settings.";
     }
   }
@@ -842,20 +830,12 @@
     }
 
     if (metrics.leanMassKg !== null) {
-      const leanPercent = 100 - metrics.bodyFatPct;
       dom.lbmValue.textContent = formatNumber(toDisplayWeight(metrics.leanMassKg), 1);
-      setMetricTag(dom.lbmTag, {
-        label: `${formatNumber(leanPercent, 0)}% of weight`,
-        tone: "neutral",
-      });
-      renderCompositionScale(dom.lbmScale, leanPercent, metrics.bodyFatPct);
       dom.lbmFoot.textContent = metrics.fatMassKg !== null
         ? `Fat mass ${formatNumber(toDisplayWeight(metrics.fatMassKg), 1)} ${unit}`
         : "Calculated from your latest body fat reading.";
     } else {
       dom.lbmValue.textContent = "—";
-      setMetricTag(dom.lbmTag, null);
-      dom.lbmScale.hidden = true;
       dom.lbmFoot.textContent = "Requires a body fat reading.";
     }
 

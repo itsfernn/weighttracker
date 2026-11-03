@@ -61,7 +61,7 @@ Import merges new rows into existing data and skips duplicate timestamps. The im
 - **Lean body mass** = weight × (1 − body fat percentage / 100)
 - **Fat mass** = weight × body fat percentage / 100
 - **FFMI** = lean body mass / height in meters squared
-- **Normalized FFMI** = FFMI + 6.1 × (1.8 − height in meters)
+- **Normalized FFMI** = FFMI + 6.3 × (1.8 − height in meters)
 - **Weekly average** = the mean of all weight or body fat readings from Monday through Sunday
 
 BMI is a broad population measure and does not account for body composition. Its categories are not sex-specific for adults. FFMI and body fat reference ranges use the optional reference sex selected in the profile.

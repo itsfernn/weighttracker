@@ -422,8 +422,8 @@ svg {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 48px;
-  padding: 70px 0 40px;
+  gap: 36px;
+  padding: 46px 0 28px;
   animation: rise 700ms var(--ease) both;
 }
 
@@ -449,7 +449,7 @@ svg {
 
 .intro h1 {
   max-width: 780px;
-  font-size: clamp(3.2rem, 6.4vw, 5.9rem);
+  font-size: clamp(3rem, 5.6vw, 5rem);
   font-weight: 660;
   line-height: .94;
   letter-spacing: -.065em;
@@ -463,11 +463,11 @@ svg {
 }
 
 .intro-copy {
-  max-width: 550px;
-  margin-top: 24px;
+  max-width: 540px;
+  margin-top: 18px;
   color: var(--muted);
-  font-size: 15px;
-  line-height: 1.7;
+  font-size: 14px;
+  line-height: 1.65;
 }
 
 .intro-actions {
@@ -590,87 +590,86 @@ svg {
 }
 
 .overview-card {
-  min-height: 236px;
+  min-height: 0;
+  padding: 18px;
 }
 
-.overview-primary {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  margin-top: 14px;
+.overview-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: 18px;
+  margin-top: 15px;
 }
 
-.overview-primary .stat-value-row {
-  margin-top: 0;
-  padding-top: 0;
+.overview-main,
+.overview-side {
+  min-width: 0;
 }
 
-.overview-delta {
+.overview-metric-label {
   display: block;
-  margin-top: 6px;
-  color: var(--muted);
-  font-size: 11.5px;
-  line-height: 1.5;
-}
-
-.overview-divider {
-  height: 1px;
-  margin: 15px 0 12px;
-  background: var(--border);
-}
-
-.overview-divider[hidden] {
-  display: none;
-}
-
-.overview-secondary {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 14px;
-  min-height: 40px;
-}
-
-.overview-secondary[hidden] {
-  display: none;
-}
-
-.overview-secondary-label {
-  display: block;
-  color: var(--muted);
-  font-size: 9.5px;
+  color: var(--faint);
+  font-size: 9px;
   font-weight: 700;
   letter-spacing: .08em;
   text-transform: uppercase;
 }
 
-.overview-secondary-value {
+.overview-main .stat-value-row {
+  margin-top: 3px;
+  padding-top: 0;
+}
+
+.overview-delta {
+  display: block;
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.overview-side {
+  padding-left: 16px;
+  border-left: 1px solid var(--border);
+}
+
+.overview-side-value {
   display: flex;
   align-items: baseline;
   gap: 3px;
-  margin-top: 2px;
+  margin-top: 3px;
   color: var(--text);
   font-variant-numeric: tabular-nums;
 }
 
-.overview-secondary-value strong {
-  font-size: 21px;
+.overview-side-value strong {
+  font-size: 1.5rem;
   font-weight: 640;
-  letter-spacing: -.04em;
+  letter-spacing: -.045em;
+  line-height: 1.1;
 }
 
-.overview-secondary-value span {
+.overview-side-value span {
   color: var(--faint);
   font-size: 10px;
   font-weight: 600;
 }
 
-.overview-secondary-note {
-  max-width: 55%;
+.overview-side-note {
+  display: block;
+  margin-top: 3px;
   color: var(--faint);
-  font-size: 10px;
-  line-height: 1.45;
-  text-align: right;
+  font-size: 9.5px;
+  line-height: 1.35;
+}
+
+.stat-goal .goal-progress {
+  width: 100%;
+  margin-top: 14px;
+}
+
+.stat-goal .overview-delta {
+  min-height: 16px;
 }
 
 .delta {
@@ -822,8 +821,8 @@ svg {
 
 .chart-stage {
   position: relative;
-  height: 345px;
-  min-height: 240px;
+  height: 315px;
+  min-height: 230px;
   touch-action: pan-y;
 }
 
@@ -1072,7 +1071,7 @@ svg {
 }
 
 .composition-section {
-  margin-top: 54px;
+  margin-top: 42px;
   animation: rise 750ms 220ms var(--ease) both;
 }
 
@@ -1095,16 +1094,16 @@ svg {
 }
 
 .metric-card {
-  padding: 20px;
+  padding: 18px;
   border-radius: var(--radius-lg);
 }
 
 .metric-icon {
   display: grid;
   place-items: center;
-  width: 35px;
-  height: 35px;
-  margin-bottom: 27px;
+  width: 33px;
+  height: 33px;
+  margin-bottom: 16px;
   border: 1px solid var(--border);
   border-radius: 10px;
   color: var(--brand);
@@ -1287,7 +1286,7 @@ svg {
 }
 
 .history-card {
-  margin-top: 54px;
+  margin-top: 42px;
   padding: 27px 28px 18px;
   animation: rise 750ms 280ms var(--ease) both;
 }
@@ -2007,7 +2006,7 @@ svg {
   }
 
   .intro h1 {
-    font-size: clamp(3.2rem, 8vw, 5rem);
+    font-size: clamp(2.9rem, 7vw, 4.2rem);
   }
 
   .stat-grid {
@@ -2020,10 +2019,6 @@ svg {
 
   .stat-card {
     min-height: 154px;
-  }
-
-  .overview-card {
-    min-height: 218px;
   }
 
   .chart-controls {
@@ -2064,31 +2059,17 @@ svg {
 
   .intro {
     display: block;
-    padding: 42px 0 28px;
+    padding: 26px 0 20px;
   }
 
   .intro h1 {
-    font-size: clamp(2.85rem, 12vw, 4.2rem);
-    letter-spacing: -.06em;
+    font-size: clamp(2rem, 8vw, 2.8rem);
+    letter-spacing: -.055em;
   }
 
-  .intro-copy {
-    margin-top: 18px;
-    font-size: 13.5px;
-    line-height: 1.65;
-  }
-
+  .intro-copy,
   .intro-actions {
-    display: grid;
-    grid-template-columns: 1fr;
-    width: 100%;
-    margin-top: 24px;
-    padding: 0;
-  }
-
-  .intro-actions .button {
-    justify-content: center;
-    padding-inline: 10px;
+    display: none;
   }
 
   .stat-grid {
@@ -2164,7 +2145,7 @@ svg {
   }
 
   .chart-stage {
-    height: 268px;
+    height: 235px;
   }
 
   .chart-footer {
@@ -2184,7 +2165,7 @@ svg {
 
   .composition-section,
   .history-card {
-    margin-top: 37px;
+    margin-top: 28px;
   }
 
   .section-heading {
@@ -2206,9 +2187,9 @@ svg {
   }
 
   .metric-icon {
-    width: 31px;
-    height: 31px;
-    margin-bottom: 21px;
+    width: 29px;
+    height: 29px;
+    margin-bottom: 13px;
   }
 
   .metric-value {
@@ -2352,21 +2333,12 @@ svg {
     display: none;
   }
 
-  .intro-actions .button {
-    justify-content: flex-start;
-    padding-inline: 15px;
-  }
-
   .stat-grid {
     grid-template-columns: 1fr;
   }
 
   .stat-card {
     padding: 15px 14px;
-  }
-
-  .overview-card {
-    min-height: 210px;
   }
 
   .stat-label {
@@ -2405,7 +2377,7 @@ svg {
   }
 
   .metric-icon {
-    margin-bottom: 18px;
+    margin-bottom: 12px;
   }
 
   .metric-value {
@@ -2449,7 +2421,7 @@ svg {
   }
 
   .intro h1 {
-    font-size: 2.65rem;
+    font-size: 2.1rem;
   }
 
   .stat-label {
