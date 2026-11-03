@@ -54,7 +54,15 @@
     lbmValue: document.getElementById("lbmValue"),
     lbmUnit: document.getElementById("lbmUnit"),
     lbmFoot: document.getElementById("lbmFoot"),
+    bmiTag: document.getElementById("bmiTag"),
+    bmiScale: document.getElementById("bmiScale"),
+    bodyFatTag: document.getElementById("bodyFatTag"),
+    bodyFatScale: document.getElementById("bodyFatScale"),
+    lbmTag: document.getElementById("lbmTag"),
+    lbmScale: document.getElementById("lbmScale"),
     ffmiValue: document.getElementById("ffmiValue"),
+    ffmiTag: document.getElementById("ffmiTag"),
+    ffmiScale: document.getElementById("ffmiScale"),
     ffmiFoot: document.getElementById("ffmiFoot"),
     historyHeading: document.getElementById("historyHeading"),
     historySubtitle: document.getElementById("historySubtitle"),
@@ -84,6 +92,7 @@
     heightInput: document.getElementById("heightInput"),
     heightUnit: document.getElementById("heightUnit"),
     heightError: document.getElementById("heightError"),
+    referenceSexInput: document.getElementById("referenceSexInput"),
     goalWeightInput: document.getElementById("goalWeightInput"),
     goalWeightUnit: document.getElementById("goalWeightUnit"),
     goalWeightError: document.getElementById("goalWeightError"),
@@ -112,7 +121,7 @@
     return {
       version: 1,
       unitSystem: "metric",
-      profile: { heightCm: null },
+      profile: { heightCm: null, referenceSex: null },
       entries: [],
       goal: { weightKg: null, bodyFatPct: null, date: null },
     };
@@ -130,6 +139,9 @@
     base.unitSystem = input.unitSystem === "imperial" ? "imperial" : "metric";
     const height = Number(input.profile?.heightCm);
     base.profile.heightCm = Number.isFinite(height) && height > 0 ? height : null;
+    base.profile.referenceSex = ["male", "female"].includes(input.profile?.referenceSex)
+      ? input.profile.referenceSex
+      : null;
 
     const goal = input.goal || {};
     const goalWeight = Number(goal.weightKg);
@@ -466,11 +478,143 @@
     };
   }
 
-  function bmiLabel(bmi) {
-    if (bmi < 18.5) return "Below the healthy range";
-    if (bmi < 25) return "Within the healthy range";
-    if (bmi < 30) return "Above the healthy range";
-    return "Well above the healthy range";
+  function getBmiContext(value) {
+    const bands = [
+      {
+        min: 15,
+        max: 18.5,
+        label: "Underweight",
+        tone: "cool",
+        description: "Below 18.5 — underweight range.",
+      },
+      {
+        min: 18.5,
+        max: 25,
+        label: "Healthy weight",
+        tone: "good",
+        description: "18.5–24.9 — healthy weight range.",
+      },
+      {
+        min: 25,
+        max: 30,
+        label: "Overweight",
+        tone: "warm",
+        description: "25–29.9 — overweight range.",
+      },
+      {
+        min: 30,
+        max: 35,
+        label: "Class 1 obesity",
+        tone: "warm",
+        description: "30–34.9 — class 1 obesity range.",
+      },
+      {
+        min: 35,
+        max: 40,
+        label: "Class 2 obesity",
+        tone: "hot",
+        description: "35–39.9 — class 2 obesity range.",
+      },
+      {
+        min: 40,
+        max: 45,
+        label: "Class 3 obesity",
+        tone: "hot",
+        description: "40+ — class 3 obesity range.",
+      },
+    ];
+    const band =
+      bands.find((candidate) => value >= candidate.min && value < candidate.max) ||
+      (value < bands[0].min ? bands[0] : bands.at(-1));
+    return { ...band, min: 15, max: 45, bands };
+  }
+
+  function getBodyFatContext(value, sex) {
+    if (!sex) return null;
+    const bands = sex === "female"
+      ? [
+          { min: 0, max: 14, label: "Very lean", tone: "cool", description: "Very lean range for women." },
+          { min: 14, max: 21, label: "Athletic", tone: "good", description: "Athletic range for women." },
+          { min: 21, max: 25, label: "Fitness", tone: "good", description: "Fitness range for women." },
+          { min: 25, max: 32, label: "Average", tone: "neutral", description: "Average range for women." },
+          { min: 32, max: 50, label: "Above average", tone: "warm", description: "Above the typical range for women." },
+        ]
+      : [
+          { min: 0, max: 6, label: "Very lean", tone: "cool", description: "Very lean range for men." },
+          { min: 6, max: 14, label: "Athletic", tone: "good", description: "Athletic range for men." },
+          { min: 14, max: 18, label: "Fitness", tone: "good", description: "Fitness range for men." },
+          { min: 18, max: 25, label: "Average", tone: "neutral", description: "Average range for men." },
+          { min: 25, max: 50, label: "Above average", tone: "warm", description: "Above the typical range for men." },
+        ];
+    const band =
+      bands.find((candidate) => value >= candidate.min && value < candidate.max) ||
+      (value < bands[0].min ? bands[0] : bands.at(-1));
+    return { ...band, min: 0, max: 50, bands };
+  }
+
+  function getFfmiContext(value, sex) {
+    if (!sex) return null;
+    const bands = sex === "female"
+      ? [
+          { min: 12, max: 15, label: "Below average", tone: "cool", description: "Little resistance training history." },
+          { min: 15, max: 17, label: "Average", tone: "neutral", description: "Typical untrained adult." },
+          { min: 17, max: 19, label: "Above average", tone: "good", description: "Regular lifter, roughly 1–2 years in." },
+          { min: 19, max: 21, label: "Excellent", tone: "good", description: "Dedicated multi-year training." },
+          { min: 21, max: 23, label: "Superior", tone: "good", description: "Advanced; near most people's genetic ceiling." },
+          { min: 23, max: 27, label: "Exceptional", tone: "warm", description: "Elite female muscularity." },
+        ]
+      : [
+          { min: 14, max: 18, label: "Below average", tone: "cool", description: "Little resistance training history." },
+          { min: 18, max: 20, label: "Average", tone: "neutral", description: "Typical untrained adult." },
+          { min: 20, max: 22, label: "Above average", tone: "good", description: "Regular lifter, roughly 1–2 years in." },
+          { min: 22, max: 23, label: "Excellent", tone: "good", description: "Dedicated multi-year training." },
+          { min: 23, max: 26, label: "Superior", tone: "good", description: "Advanced; near most people's genetic ceiling." },
+          { min: 26, max: 28, label: "Exceptional", tone: "warm", description: "Rare naturally; PED use becomes a relevant possibility." },
+          { min: 28, max: 32, label: "Very exceptional", tone: "hot", description: "Almost never seen naturally in research." },
+        ];
+    const band =
+      bands.find((candidate) => value >= candidate.min && value < candidate.max) ||
+      (value < bands[0].min ? bands[0] : bands.at(-1));
+    return { ...band, min: bands[0].min, max: bands.at(-1).max, bands };
+  }
+
+  function setMetricTag(element, context) {
+    if (!element) return;
+    if (!context) {
+      element.hidden = true;
+      return;
+    }
+    element.hidden = false;
+    element.textContent = context.label;
+    element.className = `metric-tag is-${context.tone}`;
+  }
+
+  function renderMetricScale(element, context, value) {
+    if (!element) return;
+    if (!context) {
+      element.hidden = true;
+      element.innerHTML = "";
+      return;
+    }
+    const width = context.max - context.min;
+    const marker = clamp(((value - context.min) / width) * 100, 0, 100);
+    element.hidden = false;
+    element.setAttribute(
+      "aria-label",
+      `${context.label}: ${formatNumber(value, 1)} on a ${formatNumber(context.min, 0)}–${formatNumber(context.max, 0)} scale`,
+    );
+    element.innerHTML = `<div class="metric-scale-track"><div class="metric-scale-bands">${context.bands
+      .map((band) => {
+        const segmentWidth = ((band.max - band.min) / width) * 100;
+        return `<span class="metric-scale-band is-${band.tone}" style="width:${segmentWidth.toFixed(2)}%" title="${escapeHtml(`${band.label}: ${formatNumber(band.min, 1)}–${formatNumber(band.max, 1)}`)}"></span>`;
+      })
+      .join("")}</div><span class="metric-scale-marker" style="left:${marker.toFixed(2)}%"></span></div>`;
+  }
+
+  function renderCompositionScale(element, leanPercent, fatPercent) {
+    if (!element) return;
+    element.hidden = false;
+    element.innerHTML = `<div class="metric-scale-track"><div class="metric-scale-bands"><span class="metric-scale-band is-good" style="width:${leanPercent.toFixed(1)}%"></span><span class="metric-scale-band is-warm" style="width:${fatPercent.toFixed(1)}%"></span></div></div>`;
   }
 
   function trendMarkup(delta, unit, suffix) {
@@ -648,60 +792,83 @@
   function renderComposition() {
     const metrics = calculateMetrics();
     const unit = weightUnit();
-    const heightLabel = state.profile.heightCm
-      ? `${formatHeight(state.profile.heightCm)} ${heightUnit()}`
-      : null;
+    const sex = state.profile.referenceSex;
 
     dom.lbmUnit.textContent = unit;
     dom.compositionSubtitle.textContent = state.profile.heightCm
-      ? "Calculated from your latest weigh-ins and profile."
+      ? "Ranges are general fitness references, not medical advice."
       : "Add your height to unlock BMI, lean mass, and FFMI.";
 
     if (metrics.bmi !== null) {
+      const context = getBmiContext(metrics.bmi);
       dom.bmiValue.textContent = formatNumber(metrics.bmi, 1);
-      dom.bmiFoot.textContent = `${bmiLabel(metrics.bmi)}${heightLabel ? ` · ${heightLabel}` : ""}`;
-    } else if (metrics.latest && !state.profile.heightCm) {
-      dom.bmiValue.textContent = "—";
-      dom.bmiFoot.textContent = "Add your height in settings.";
+      setMetricTag(dom.bmiTag, context);
+      renderMetricScale(dom.bmiScale, context, metrics.bmi);
+      dom.bmiFoot.textContent = context.description;
     } else {
       dom.bmiValue.textContent = "—";
-      dom.bmiFoot.textContent = "Log a weigh-in to calculate your BMI.";
+      setMetricTag(dom.bmiTag, null);
+      renderMetricScale(dom.bmiScale, null);
+      dom.bmiFoot.textContent =
+        metrics.latest && !state.profile.heightCm
+          ? "Add your height in settings."
+          : "Log a weigh-in to calculate your BMI.";
     }
 
     if (metrics.bodyFatPct !== null) {
       dom.metricBodyFatValue.textContent = formatNumber(metrics.bodyFatPct, 1);
-      if (state.goal.bodyFatPct !== null) {
-        const difference = metrics.bodyFatPct - state.goal.bodyFatPct;
-        dom.metricBodyFatFoot.textContent =
-          Math.abs(difference) < 0.05
-            ? `At your ${formatNumber(state.goal.bodyFatPct, 1)}% goal`
-            : `Goal ${formatNumber(state.goal.bodyFatPct, 1)}% · ${formatNumber(Math.abs(difference), 1)} pts to go`;
+      if (sex) {
+        const context = getBodyFatContext(metrics.bodyFatPct, sex);
+        setMetricTag(dom.bodyFatTag, context);
+        renderMetricScale(dom.bodyFatScale, context, metrics.bodyFatPct);
+        dom.metricBodyFatFoot.textContent = context.description;
       } else {
-        dom.metricBodyFatFoot.textContent = `Measured ${formatDateShort(new Date(metrics.latestBodyFat.at))}`;
+        setMetricTag(dom.bodyFatTag, { label: "Set sex", tone: "neutral" });
+        renderMetricScale(dom.bodyFatScale, null);
+        dom.metricBodyFatFoot.textContent =
+          "Set a reference sex in settings for body fat context.";
       }
     } else {
       dom.metricBodyFatValue.textContent = "—";
+      setMetricTag(dom.bodyFatTag, null);
+      renderMetricScale(dom.bodyFatScale, null);
       dom.metricBodyFatFoot.textContent = "Add body fat to any weigh-in to track it.";
     }
 
     if (metrics.leanMassKg !== null) {
+      const leanPercent = 100 - metrics.bodyFatPct;
       dom.lbmValue.textContent = formatNumber(toDisplayWeight(metrics.leanMassKg), 1);
+      setMetricTag(dom.lbmTag, {
+        label: `${formatNumber(leanPercent, 0)}% of weight`,
+        tone: "neutral",
+      });
+      renderCompositionScale(dom.lbmScale, leanPercent, metrics.bodyFatPct);
       dom.lbmFoot.textContent = metrics.fatMassKg !== null
         ? `Fat mass ${formatNumber(toDisplayWeight(metrics.fatMassKg), 1)} ${unit}`
         : "Calculated from your latest body fat reading.";
     } else {
       dom.lbmValue.textContent = "—";
+      setMetricTag(dom.lbmTag, null);
+      dom.lbmScale.hidden = true;
       dom.lbmFoot.textContent = "Requires a body fat reading.";
     }
 
     if (metrics.ffmi !== null) {
       dom.ffmiValue.textContent = formatNumber(metrics.ffmi, 1);
-      dom.ffmiFoot.textContent = `Normalized ${formatNumber(metrics.normalizedFfmi, 1)} · from your latest body fat reading`;
-    } else if (!state.profile.heightCm && metrics.bodyFatPct !== null) {
-      dom.ffmiValue.textContent = "—";
-      dom.ffmiFoot.textContent = "Add your height in settings.";
+      if (sex) {
+        const context = getFfmiContext(metrics.ffmi, sex);
+        setMetricTag(dom.ffmiTag, context);
+        renderMetricScale(dom.ffmiScale, context, metrics.ffmi);
+        dom.ffmiFoot.textContent = `Adjusted ${formatNumber(metrics.normalizedFfmi, 1)} · ${context.description}`;
+      } else {
+        setMetricTag(dom.ffmiTag, { label: "Set sex", tone: "neutral" });
+        renderMetricScale(dom.ffmiScale, null);
+        dom.ffmiFoot.textContent = `Adjusted ${formatNumber(metrics.normalizedFfmi, 1)} · set a reference sex in settings for context.`;
+      }
     } else {
       dom.ffmiValue.textContent = "—";
+      setMetricTag(dom.ffmiTag, null);
+      renderMetricScale(dom.ffmiScale, null);
       dom.ffmiFoot.textContent = "Requires body fat and height.";
     }
   }
@@ -1300,6 +1467,7 @@
     dom.goalBodyFatInput.value =
       state.goal.bodyFatPct !== null ? String(round(state.goal.bodyFatPct, 1)) : "";
     dom.goalDateInput.value = state.goal.date || "";
+    dom.referenceSexInput.value = state.profile.referenceSex || "";
     dom.settingsDialog.showModal();
   }
 
@@ -1449,6 +1617,9 @@
 
     state.unitSystem = unit;
     state.profile.heightCm = heightCm;
+    state.profile.referenceSex = ["male", "female"].includes(dom.referenceSexInput.value)
+      ? dom.referenceSexInput.value
+      : null;
     state.goal = goalWeightKg === null
       ? { weightKg: null, bodyFatPct: null, date: null }
       : {

@@ -13,6 +13,7 @@ All data stays in the browser using `localStorage`. There is no account, server,
 - Goal weight, target body fat, and target date
 - Progress, remaining distance, and required weekly pace
 - BMI, body fat, lean body mass, fat mass, FFMI, and normalized FFMI
+- Color-coded BMI, body fat, and FFMI ranges with an optional reference sex
 - Edit and delete past weigh-ins
 - CSV import and export for backups or moving between browsers
 - Metric and imperial units
@@ -62,7 +63,9 @@ Import merges new rows into existing data and skips duplicate timestamps. The im
 - **Normalized FFMI** = FFMI + 6.1 × (1.8 − height in meters)
 - **Weekly average** = the mean of all weight or body fat readings from Monday through Sunday
 
-BMI is a broad population measure and does not account for body composition. Use the trend and body composition metrics together.
+BMI is a broad population measure and does not account for body composition. Its categories are not sex-specific for adults. FFMI and body fat reference ranges use the optional reference sex selected in the profile.
+
+FFMI categories are contextual fitness benchmarks, not a health diagnosis. The highest ranges are rare naturally; measurement error, training history, genetics, and PED use can all affect the number. Use trends and the full body composition picture rather than a single reading.
 
 ## Privacy and backups
 
