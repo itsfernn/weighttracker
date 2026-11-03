@@ -41,12 +41,9 @@
     goalLegend: document.getElementById("goalLegend"),
     compositionSubtitle: document.getElementById("compositionSubtitle"),
     bmiValue: document.getElementById("bmiValue"),
-    bmiFoot: document.getElementById("bmiFoot"),
     metricBodyFatValue: document.getElementById("metricBodyFatValue"),
-    metricBodyFatFoot: document.getElementById("metricBodyFatFoot"),
     lbmValue: document.getElementById("lbmValue"),
     lbmUnit: document.getElementById("lbmUnit"),
-    lbmFoot: document.getElementById("lbmFoot"),
     bmiTag: document.getElementById("bmiTag"),
     bmiScale: document.getElementById("bmiScale"),
     bodyFatTag: document.getElementById("bodyFatTag"),
@@ -55,7 +52,6 @@
     ffmiLabel: document.getElementById("ffmiLabel"),
     ffmiTag: document.getElementById("ffmiTag"),
     ffmiScale: document.getElementById("ffmiScale"),
-    ffmiFoot: document.getElementById("ffmiFoot"),
     historyHeading: document.getElementById("historyHeading"),
     historySubtitle: document.getElementById("historySubtitle"),
     historyList: document.getElementById("historyList"),
@@ -588,11 +584,7 @@
     element.className = `metric-tag is-${context.tone}`;
   }
 
-  function setMetricFoot(element, text) {
-    if (!element) return;
-    element.textContent = text || "";
-    element.hidden = !text;
-  }
+
 
   function renderMetricScale(element, context, value) {
     if (!element) return;
@@ -766,17 +758,10 @@
       dom.bmiValue.textContent = formatNumber(metrics.bmi, 1);
       setMetricTag(dom.bmiTag, context);
       renderMetricScale(dom.bmiScale, context, metrics.bmi);
-      setMetricFoot(dom.bmiFoot, "");
     } else {
       dom.bmiValue.textContent = "—";
       setMetricTag(dom.bmiTag, null);
       renderMetricScale(dom.bmiScale, null);
-      setMetricFoot(
-        dom.bmiFoot,
-        metrics.latest && !state.profile.heightCm
-          ? "Add your height in settings."
-          : "Log a weigh-in to calculate your BMI.",
-      );
     }
 
     if (metrics.bodyFatPct !== null) {
@@ -785,33 +770,20 @@
         const context = getBodyFatContext(metrics.bodyFatPct, sex);
         setMetricTag(dom.bodyFatTag, context);
         renderMetricScale(dom.bodyFatScale, context, metrics.bodyFatPct);
-        setMetricFoot(dom.metricBodyFatFoot, "");
       } else {
         setMetricTag(dom.bodyFatTag, { label: "Set sex", tone: "neutral" });
         renderMetricScale(dom.bodyFatScale, null);
-        setMetricFoot(
-          dom.metricBodyFatFoot,
-          "Set a reference sex in settings for body fat context.",
-        );
       }
     } else {
       dom.metricBodyFatValue.textContent = "—";
       setMetricTag(dom.bodyFatTag, null);
       renderMetricScale(dom.bodyFatScale, null);
-      setMetricFoot(dom.metricBodyFatFoot, "Add body fat to any weigh-in to track it.");
     }
 
     if (metrics.leanMassKg !== null) {
       dom.lbmValue.textContent = formatNumber(toDisplayWeight(metrics.leanMassKg), 1);
-      setMetricFoot(
-        dom.lbmFoot,
-        metrics.fatMassKg !== null
-          ? `Fat mass ${formatNumber(toDisplayWeight(metrics.fatMassKg), 1)} ${unit}`
-          : "Calculated from your latest body fat reading.",
-      );
     } else {
       dom.lbmValue.textContent = "—";
-      setMetricFoot(dom.lbmFoot, "Requires a body fat reading.");
     }
 
     const adjustedFfmi = state.profile.ffmiMode === "adjusted";
@@ -824,20 +796,14 @@
         const context = getFfmiContext(ffmiDisplayValue, sex);
         setMetricTag(dom.ffmiTag, context);
         renderMetricScale(dom.ffmiScale, context, ffmiDisplayValue);
-        setMetricFoot(dom.ffmiFoot, "");
       } else {
         setMetricTag(dom.ffmiTag, { label: "Set sex", tone: "neutral" });
         renderMetricScale(dom.ffmiScale, null);
-        setMetricFoot(
-          dom.ffmiFoot,
-          "Set a reference sex in settings for FFMI context.",
-        );
       }
     } else {
       dom.ffmiValue.textContent = "—";
       setMetricTag(dom.ffmiTag, null);
       renderMetricScale(dom.ffmiScale, null);
-      setMetricFoot(dom.ffmiFoot, "Requires body fat and height.");
     }
   }
 

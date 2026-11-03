@@ -1265,24 +1265,6 @@ svg {
   font-weight: 600;
 }
 
-.metric-foot {
-  min-height: 32px;
-  margin-top: 8px;
-  color: var(--muted);
-  font-size: 11px;
-  line-height: 1.45;
-}
-
-.metric-foot[hidden] {
-  display: none;
-}
-
-.metric-foot a,
-.metric-foot button {
-  color: var(--brand);
-  font-weight: 600;
-}
-
 .metric-card-ffmi {
   background:
     radial-gradient(140px 130px at 100% 0%, var(--brand-soft), transparent 70%),
@@ -2223,10 +2205,6 @@ svg {
     font-size: 26px;
   }
 
-  .metric-foot {
-    font-size: 10px;
-  }
-
   .history-card {
     padding: 19px 16px 13px;
     border-radius: var(--radius-lg);
@@ -2409,10 +2387,6 @@ svg {
 
   .metric-value {
     font-size: 24px;
-  }
-
-  .metric-foot {
-    min-height: 42px;
   }
 
   .form-grid,
