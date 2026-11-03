@@ -1125,7 +1125,7 @@ svg {
 
 .composition-value {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: flex-end;
   gap: 8px;
   min-width: 72px;
