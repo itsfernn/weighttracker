@@ -480,7 +480,7 @@ svg {
 
 .stat-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
   animation: rise 700ms 80ms var(--ease) both;
 }
@@ -581,6 +581,90 @@ svg {
   color: var(--muted);
   font-size: 11.5px;
   line-height: 1.5;
+}
+
+.overview-card {
+  min-height: 236px;
+}
+
+.overview-primary {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-top: 14px;
+}
+
+.overview-primary .stat-value-row {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+.overview-delta {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+.overview-divider {
+  height: 1px;
+  margin: 15px 0 12px;
+  background: var(--border);
+}
+
+.overview-divider[hidden] {
+  display: none;
+}
+
+.overview-secondary {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: 40px;
+}
+
+.overview-secondary[hidden] {
+  display: none;
+}
+
+.overview-secondary-label {
+  display: block;
+  color: var(--muted);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.overview-secondary-value {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  margin-top: 2px;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.overview-secondary-value strong {
+  font-size: 21px;
+  font-weight: 640;
+  letter-spacing: -.04em;
+}
+
+.overview-secondary-value span {
+  color: var(--faint);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.overview-secondary-note {
+  max-width: 55%;
+  color: var(--faint);
+  font-size: 10px;
+  line-height: 1.45;
+  text-align: right;
 }
 
 .delta {
@@ -1741,13 +1825,20 @@ svg {
     font-size: clamp(3.2rem, 8vw, 5rem);
   }
 
-  .stat-grid,
+  .stat-grid {
+    grid-template-columns: 1fr;
+  }
+
   .metric-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .stat-card {
     min-height: 154px;
+  }
+
+  .overview-card {
+    min-height: 218px;
   }
 
   .chart-controls {
@@ -2082,11 +2173,15 @@ svg {
   }
 
   .stat-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
   }
 
   .stat-card {
-    padding: 14px 13px;
+    padding: 15px 14px;
+  }
+
+  .overview-card {
+    min-height: 210px;
   }
 
   .stat-label {

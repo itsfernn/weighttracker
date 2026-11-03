@@ -22,9 +22,10 @@
     weeklyAverage: document.getElementById("weeklyAverage"),
     weeklyAverageUnit: document.getElementById("weeklyAverageUnit"),
     weeklyDelta: document.getElementById("weeklyDelta"),
-    bodyFatDate: document.getElementById("bodyFatDate"),
-    bodyFatValue: document.getElementById("bodyFatValue"),
-    bodyFatDelta: document.getElementById("bodyFatDelta"),
+    currentBodyFatValue: document.getElementById("currentBodyFatValue"),
+    currentBodyFatNote: document.getElementById("currentBodyFatNote"),
+    weeklyBodyFatValue: document.getElementById("weeklyBodyFatValue"),
+    weeklyBodyFatNote: document.getElementById("weeklyBodyFatNote"),
     goalDate: document.getElementById("goalDate"),
     goalValue: document.getElementById("goalValue"),
     goalUnit: document.getElementById("goalUnit"),
@@ -32,6 +33,10 @@
     goalProgressBar: document.getElementById("goalProgressBar"),
     goalProgressLabel: document.getElementById("goalProgressLabel"),
     goalFoot: document.getElementById("goalFoot"),
+    goalDivider: document.getElementById("goalDivider"),
+    goalBodyFatRow: document.getElementById("goalBodyFatRow"),
+    goalBodyFatValue: document.getElementById("goalBodyFatValue"),
+    goalBodyFatNote: document.getElementById("goalBodyFatNote"),
     chartSubtitle: document.getElementById("chartSubtitle"),
     chartStage: document.getElementById("chartStage"),
     chartSvg: document.getElementById("chartSvg"),
@@ -499,10 +504,15 @@
 
   function renderSummary() {
     const unit = weightUnit();
+    const metrics = calculateMetrics();
     const latest = getLatestEntry();
     const weeklyGroups = groupEntriesByWeek(state.entries, "weight");
     const latestWeek = weeklyGroups.length ? weeklyGroups[weeklyGroups.length - 1] : null;
     const previousWeek = weeklyGroups.length > 1 ? weeklyGroups[weeklyGroups.length - 2] : null;
+    const weeklyBodyFatGroups = groupEntriesByWeek(state.entries, "bodyFat");
+    const latestBodyFatWeek = weeklyBodyFatGroups.length
+      ? weeklyBodyFatGroups[weeklyBodyFatGroups.length - 1]
+      : null;
     const latestBodyFat = getLatestBodyFatEntry();
     const previousBodyFat = latestBodyFat
       ? state.entries
@@ -513,8 +523,6 @@
     dom.currentWeightUnit.textContent = unit;
     dom.weeklyAverageUnit.textContent = unit;
     dom.goalUnit.textContent = unit;
-    dom.bodyFatValue.textContent = latestBodyFat ? formatNumber(latestBodyFat.bodyFatPct, 1) : "—";
-    dom.bodyFatDate.textContent = latestBodyFat ? formatDateShort(new Date(latestBodyFat.at)) : "Not measured";
 
     if (latest) {
       const latestDate = new Date(latest.at);
@@ -533,6 +541,20 @@
       dom.currentDelta.textContent = "Log your first weigh-in to get started.";
     }
 
+    if (latestBodyFat) {
+      const measuredAt = new Date(latestBodyFat.at);
+      dom.currentBodyFatValue.textContent = formatNumber(latestBodyFat.bodyFatPct, 1);
+      if (previousBodyFat) {
+        const delta = latestBodyFat.bodyFatPct - previousBodyFat.bodyFatPct;
+        dom.currentBodyFatNote.textContent = `${formatDateShort(measuredAt)} · ${delta < 0 ? "−" : delta > 0 ? "+" : ""}${formatNumber(Math.abs(delta), 1)} pts`;
+      } else {
+        dom.currentBodyFatNote.textContent = `Measured ${formatDateShort(measuredAt)}`;
+      }
+    } else {
+      dom.currentBodyFatValue.textContent = "—";
+      dom.currentBodyFatNote.textContent = "Not measured";
+    }
+
     if (latestWeek) {
       dom.weeklyAverage.textContent = formatNumber(toDisplayWeight(latestWeek.avg), 1);
       dom.weeklyDate.textContent = formatWeekRange(latestWeek.weekStart);
@@ -549,46 +571,40 @@
       dom.weeklyDelta.textContent = "Weekly averages appear after your first entry.";
     }
 
-    if (latestBodyFat) {
-      if (previousBodyFat) {
-        const delta = latestBodyFat.bodyFatPct - previousBodyFat.bodyFatPct;
-        dom.bodyFatDelta.innerHTML = trendMarkup(
-          delta,
-          "pts",
-          `since ${formatDateShort(new Date(previousBodyFat.at))}`,
-        );
-      } else {
-        dom.bodyFatDelta.textContent = "First body fat reading.";
-      }
-
-      if (state.goal.bodyFatPct !== null) {
-        const difference = latestBodyFat.bodyFatPct - state.goal.bodyFatPct;
-        if (Math.abs(difference) < 0.05) {
-          dom.bodyFatDelta.textContent = "Body fat goal reached.";
-        } else {
-          dom.bodyFatDelta.textContent = `Goal ${formatNumber(state.goal.bodyFatPct, 1)}% · ${formatNumber(Math.abs(difference), 1)} pts to go`;
-        }
-      }
+    if (latestBodyFatWeek) {
+      dom.weeklyBodyFatValue.textContent = formatNumber(latestBodyFatWeek.avg, 1);
+      dom.weeklyBodyFatNote.textContent = `${formatWeekRange(latestBodyFatWeek.weekStart)} · ${pluralize(latestBodyFatWeek.entries.length, "reading")}`;
     } else {
-      dom.bodyFatDelta.textContent = "Body fat is optional on each weigh-in.";
+      dom.weeklyBodyFatValue.textContent = "—";
+      dom.weeklyBodyFatNote.textContent = "No body fat readings";
     }
 
     if (state.goal.weightKg !== null) {
-      dom.goalValue.textContent = formatNumber(toDisplayWeight(state.goal.weightKg), 1);
-      const metaParts = [];
-      if (state.goal.date) metaParts.push(formatGoalDate(state.goal.date));
-      if (state.goal.bodyFatPct !== null) {
-        metaParts.push(`${formatNumber(state.goal.bodyFatPct, 1)}% BF`);
+      const targetWeight = state.goal.weightKg;
+      const targetBodyFat = state.goal.bodyFatPct;
+      dom.goalValue.textContent = formatNumber(toDisplayWeight(targetWeight), 1);
+      dom.goalDate.textContent = state.goal.date ? formatGoalDate(state.goal.date) : "No deadline";
+      dom.goalDivider.hidden = false;
+      dom.goalBodyFatRow.hidden = false;
+
+      if (targetBodyFat !== null) {
+        dom.goalBodyFatValue.textContent = formatNumber(targetBodyFat, 1);
+      } else {
+        dom.goalBodyFatValue.textContent = "—";
       }
-      dom.goalDate.textContent = metaParts.length ? metaParts.join(" · ") : "No deadline";
+
+      if (metrics.leanMassKg !== null && targetWeight > metrics.leanMassKg) {
+        const expectedBodyFat = (1 - metrics.leanMassKg / targetWeight) * 100;
+        dom.goalBodyFatNote.textContent = `At target: ~${formatNumber(expectedBodyFat, 1)}%`;
+      } else if (metrics.leanMassKg !== null) {
+        dom.goalBodyFatNote.textContent = "Below current lean mass";
+      } else {
+        dom.goalBodyFatNote.textContent = "Add body fat for an estimate";
+      }
 
       if (latest) {
         const start = state.entries[0];
-        const goal = getGoalProgress(
-          latest.weightKg,
-          start.weightKg,
-          state.goal.weightKg,
-        );
+        const goal = getGoalProgress(latest.weightKg, start.weightKg, targetWeight);
         const progressPercent = Math.round(goal.progress * 100);
         dom.goalProgressWrap.hidden = false;
         dom.goalProgressBar.style.width = `${progressPercent}%`;
@@ -598,7 +614,7 @@
           dom.goalProgressLabel.textContent = "100%";
           dom.goalFoot.textContent = "Goal reached. Nicely done.";
         } else {
-          const remaining = Math.abs(latest.weightKg - state.goal.weightKg);
+          const remaining = Math.abs(latest.weightKg - targetWeight);
           let copy = `${formatNumber(toDisplayWeight(remaining), 1)} ${unit} to go`;
           if (state.goal.date) {
             const targetDate = parseDateOnly(state.goal.date);
@@ -623,6 +639,8 @@
       dom.goalValue.textContent = "—";
       dom.goalDate.textContent = "Not set";
       dom.goalProgressWrap.hidden = true;
+      dom.goalDivider.hidden = true;
+      dom.goalBodyFatRow.hidden = true;
       dom.goalFoot.textContent = "Set a target weight in settings.";
     }
   }
