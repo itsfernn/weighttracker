@@ -144,8 +144,8 @@
       </article>
     </section>
 
-    <section class="card chart-card" aria-labelledby="trendHeading">
-      <div class="card-heading chart-heading">
+    <section class="trend-section" aria-labelledby="trendHeading">
+      <div class="section-heading chart-heading">
         <div>
           <p class="section-kicker">Trend</p>
           <h2 id="trendHeading">The bigger picture</h2>
@@ -167,6 +167,7 @@
         </div>
       </div>
 
+      <div class="card chart-card">
       <div class="chart-shell">
         <div class="chart-stage" id="chartStage">
           <div class="chart-tooltip" id="chartTooltip" role="status" aria-live="polite"></div>
@@ -198,6 +199,7 @@
           </div>
           <p class="chart-insight" id="chartInsight"></p>
         </div>
+      </div>
       </div>
     </section>
 
@@ -236,11 +238,10 @@
           <div class="composition-value"><span class="metric-value" id="ffmiValue">—</span><span class="metric-unit">kg/m²</span></div>
         </div>
       </div>
-      </div>
     </section>
 
-    <section class="card history-card" aria-labelledby="historyHeading">
-      <div class="card-heading history-heading">
+    <section class="history-section" aria-labelledby="historyHeading">
+      <div class="section-heading history-heading">
         <div>
           <p class="section-kicker">History</p>
           <h2 id="historyHeading">Weigh-in log</h2>
@@ -259,14 +260,16 @@
         </div>
       </div>
 
-      <div class="history-list" id="historyList"></div>
-      <div class="history-empty" id="historyEmpty">
-        <p>No weigh-ins yet.</p>
-        <button class="text-button" type="button" data-log>Log your first weigh-in <span aria-hidden="true">→</span></button>
-      </div>
-      <div class="history-footer" id="historyFooter" hidden>
-        <span id="historyCount">0 entries</span>
-        <button class="text-button" id="openFullLogButton" type="button">View full log <span aria-hidden="true">→</span></button>
+      <div class="card history-card">
+        <div class="history-list" id="historyList"></div>
+        <div class="history-empty" id="historyEmpty">
+          <p>No weigh-ins yet.</p>
+          <button class="text-button" type="button" data-log>Log your first weigh-in <span aria-hidden="true">→</span></button>
+        </div>
+        <div class="history-footer" id="historyFooter" hidden>
+          <span id="historyCount">0 entries</span>
+          <button class="text-button" id="openFullLogButton" type="button">View full log <span aria-hidden="true">→</span></button>
+        </div>
       </div>
     </section>
 

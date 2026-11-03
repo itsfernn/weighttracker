@@ -733,10 +733,14 @@ svg {
   box-shadow: var(--shadow);
 }
 
-.chart-card {
+.trend-section {
   margin-top: 18px;
-  padding: 27px 28px 23px;
   animation: rise 750ms 150ms var(--ease) both;
+}
+
+.chart-card {
+  margin-top: 0;
+  padding: 20px 28px 23px;
 }
 
 .card-heading {
@@ -817,7 +821,7 @@ svg {
 }
 
 .chart-shell {
-  margin-top: 20px;
+  margin-top: 0;
 }
 
 .chart-stage {
@@ -1277,10 +1281,14 @@ svg {
   font-weight: 600;
 }
 
-.history-card {
+.history-section {
   margin-top: 54px;
-  padding: 27px 28px 18px;
   animation: rise 750ms 280ms var(--ease) both;
+}
+
+.history-card {
+  margin-top: 0;
+  padding: 12px 28px 14px;
 }
 
 .history-heading {
@@ -1294,7 +1302,7 @@ svg {
 }
 
 .history-list {
-  margin-top: 22px;
+  margin-top: 0;
 }
 
 .history-columns,
@@ -2145,8 +2153,8 @@ svg {
   }
 
   .chart-card {
-    margin-top: 12px;
-    padding: 19px 17px 17px;
+    margin-top: 0;
+    padding: 12px 17px 16px;
     border-radius: var(--radius-lg);
   }
 
@@ -2182,7 +2190,7 @@ svg {
   }
 
   .chart-shell {
-    margin-top: 15px;
+    margin-top: 0;
   }
 
   .chart-stage {
@@ -2205,7 +2213,7 @@ svg {
   }
 
   .composition-section,
-  .history-card {
+  .history-section {
     margin-top: 37px;
   }
 
@@ -2223,7 +2231,8 @@ svg {
   }
 
   .history-card {
-    padding: 19px 16px 13px;
+    margin-top: 0;
+    padding: 8px 16px 10px;
     border-radius: var(--radius-lg);
   }
 
@@ -2244,7 +2253,7 @@ svg {
   }
 
   .history-list {
-    margin-top: 16px;
+    margin-top: 0;
   }
 
   .history-columns {
