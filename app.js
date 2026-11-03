@@ -11,19 +11,12 @@
     html: document.documentElement,
     todayLabel: document.getElementById("todayLabel"),
     themeToggle: document.getElementById("themeToggle"),
-    openLogButton: document.getElementById("openLogButton"),
     openSettingsButton: document.getElementById("openSettingsButton"),
     introLogButton: document.getElementById("introLogButton"),
-    currentDate: document.getElementById("currentDate"),
-    currentWeight: document.getElementById("currentWeight"),
-    currentWeightUnit: document.getElementById("currentWeightUnit"),
-    currentDelta: document.getElementById("currentDelta"),
     weeklyDate: document.getElementById("weeklyDate"),
     weeklyAverage: document.getElementById("weeklyAverage"),
     weeklyAverageUnit: document.getElementById("weeklyAverageUnit"),
     weeklyDelta: document.getElementById("weeklyDelta"),
-    currentBodyFatValue: document.getElementById("currentBodyFatValue"),
-    currentBodyFatNote: document.getElementById("currentBodyFatNote"),
     weeklyBodyFatValue: document.getElementById("weeklyBodyFatValue"),
     weeklyBodyFatNote: document.getElementById("weeklyBodyFatNote"),
     goalDate: document.getElementById("goalDate"),
@@ -58,8 +51,6 @@
     bmiScale: document.getElementById("bmiScale"),
     bodyFatTag: document.getElementById("bodyFatTag"),
     bodyFatScale: document.getElementById("bodyFatScale"),
-    lbmTag: document.getElementById("lbmTag"),
-    lbmScale: document.getElementById("lbmScale"),
     ffmiValue: document.getElementById("ffmiValue"),
     ffmiTag: document.getElementById("ffmiTag"),
     ffmiScale: document.getElementById("ffmiScale"),
@@ -469,7 +460,7 @@
     const ffmi =
       leanMassKg !== null && heightM ? leanMassKg / (heightM * heightM) : null;
     const normalizedFfmi =
-      ffmi !== null && heightM ? ffmi + 6.1 * (1.8 - heightM) : null;
+      ffmi !== null && heightM ? ffmi + 6.3 * (1.8 - heightM) : null;
 
     return {
       latest,
@@ -617,11 +608,7 @@
       .join("")}</div><span class="metric-scale-marker" style="left:${marker.toFixed(2)}%"></span></div>`;
   }
 
-  function renderCompositionScale(element, leanPercent, fatPercent) {
-    if (!element) return;
-    element.hidden = false;
-    element.innerHTML = `<div class="metric-scale-track"><div class="metric-scale-bands"><span class="metric-scale-band is-good" style="width:${leanPercent.toFixed(1)}%"></span><span class="metric-scale-band is-warm" style="width:${fatPercent.toFixed(1)}%"></span></div></div>`;
-  }
+
 
   function trendMarkup(delta, unit, suffix) {
     if (Math.abs(delta) < 0.05) {
@@ -663,47 +650,8 @@
     const latestBodyFatWeek = weeklyBodyFatGroups.length
       ? weeklyBodyFatGroups[weeklyBodyFatGroups.length - 1]
       : null;
-    const latestBodyFat = getLatestBodyFatEntry();
-    const previousBodyFat = latestBodyFat
-      ? state.entries
-          .filter((entry) => entry.bodyFatPct !== null && entry.id !== latestBodyFat.id)
-          .at(-1)
-      : null;
-
-    dom.currentWeightUnit.textContent = unit;
     dom.weeklyAverageUnit.textContent = unit;
     dom.goalUnit.textContent = unit;
-
-    if (latest) {
-      const latestDate = new Date(latest.at);
-      dom.currentWeight.textContent = formatWeight(latest.weightKg, 1);
-      dom.currentDate.textContent = formatRelativeDate(latestDate);
-      const previous = state.entries.length > 1 ? state.entries[state.entries.length - 2] : null;
-      if (previous) {
-        const delta = toDisplayWeight(latest.weightKg) - toDisplayWeight(previous.weightKg);
-        dom.currentDelta.innerHTML = trendMarkup(delta, unit, "vs previous weigh-in");
-      } else {
-        dom.currentDelta.textContent = "First weigh-in logged.";
-      }
-    } else {
-      dom.currentWeight.textContent = "—";
-      dom.currentDate.textContent = "No data";
-      dom.currentDelta.textContent = "Log your first weigh-in to get started.";
-    }
-
-    if (latestBodyFat) {
-      const measuredAt = new Date(latestBodyFat.at);
-      dom.currentBodyFatValue.textContent = formatNumber(latestBodyFat.bodyFatPct, 1);
-      if (previousBodyFat) {
-        const delta = latestBodyFat.bodyFatPct - previousBodyFat.bodyFatPct;
-        dom.currentBodyFatNote.textContent = `${formatDateShort(measuredAt)} · ${delta < 0 ? "−" : delta > 0 ? "+" : ""}${formatNumber(Math.abs(delta), 1)} pts`;
-      } else {
-        dom.currentBodyFatNote.textContent = `Measured ${formatDateShort(measuredAt)}`;
-      }
-    } else {
-      dom.currentBodyFatValue.textContent = "—";
-      dom.currentBodyFatNote.textContent = "Not measured";
-    }
 
     if (latestWeek) {
       dom.weeklyAverage.textContent = formatNumber(toDisplayWeight(latestWeek.avg), 1);
@@ -842,20 +790,12 @@
     }
 
     if (metrics.leanMassKg !== null) {
-      const leanPercent = 100 - metrics.bodyFatPct;
       dom.lbmValue.textContent = formatNumber(toDisplayWeight(metrics.leanMassKg), 1);
-      setMetricTag(dom.lbmTag, {
-        label: `${formatNumber(leanPercent, 0)}% of weight`,
-        tone: "neutral",
-      });
-      renderCompositionScale(dom.lbmScale, leanPercent, metrics.bodyFatPct);
       dom.lbmFoot.textContent = metrics.fatMassKg !== null
         ? `Fat mass ${formatNumber(toDisplayWeight(metrics.fatMassKg), 1)} ${unit}`
         : "Calculated from your latest body fat reading.";
     } else {
       dom.lbmValue.textContent = "—";
-      setMetricTag(dom.lbmTag, null);
-      dom.lbmScale.hidden = true;
       dom.lbmFoot.textContent = "Requires a body fat reading.";
     }
 
@@ -865,11 +805,11 @@
         const context = getFfmiContext(metrics.ffmi, sex);
         setMetricTag(dom.ffmiTag, context);
         renderMetricScale(dom.ffmiScale, context, metrics.ffmi);
-        dom.ffmiFoot.textContent = `Adjusted ${formatNumber(metrics.normalizedFfmi, 1)} · ${context.description}`;
+        dom.ffmiFoot.textContent = `Adj. FFMI ${formatNumber(metrics.normalizedFfmi, 1)} · ${context.description}`;
       } else {
         setMetricTag(dom.ffmiTag, { label: "Set sex", tone: "neutral" });
         renderMetricScale(dom.ffmiScale, null);
-        dom.ffmiFoot.textContent = `Adjusted ${formatNumber(metrics.normalizedFfmi, 1)} · set a reference sex in settings for context.`;
+        dom.ffmiFoot.textContent = `Adj. FFMI ${formatNumber(metrics.normalizedFfmi, 1)} · set a reference sex in settings for context.`;
       }
     } else {
       dom.ffmiValue.textContent = "—";
@@ -2058,7 +1998,6 @@
     dom.themeToggle.addEventListener("click", () => {
       setTheme(dom.html.dataset.theme === "dark" ? "light" : "dark", true);
     });
-    dom.openLogButton.addEventListener("click", () => openEntryDialog());
     dom.introLogButton.addEventListener("click", () => openEntryDialog());
     dom.openSettingsButton.addEventListener("click", openSettings);
     dom.entryForm.addEventListener("submit", handleEntrySubmit);
@@ -2136,4 +2075,10 @@
   }
 
   init();
+
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("./sw.js").catch(() => {});
+    });
+  }
 })();

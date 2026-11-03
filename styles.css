@@ -486,7 +486,7 @@ svg {
 
 .stat-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
   animation: rise 700ms 80ms var(--ease) both;
 }
@@ -516,10 +516,6 @@ svg {
   border-radius: 50%;
   background: radial-gradient(circle, var(--brand-soft), transparent 68%);
   pointer-events: none;
-}
-
-.stat-current::after {
-  background: radial-gradient(circle, var(--brand-soft), transparent 66%);
 }
 
 .stat-top {
@@ -603,6 +599,10 @@ svg {
 .overview-primary .stat-value-row {
   margin-top: 0;
   padding-top: 0;
+}
+
+.overview-primary .goal-progress {
+  width: 100%;
 }
 
 .overview-delta {
@@ -2343,15 +2343,6 @@ svg {
 }
 
 @media (max-width: 520px) {
-  #openLogButton {
-    width: 40px;
-    padding: 0;
-  }
-
-  #openLogButton span {
-    display: none;
-  }
-
   .intro-actions .button {
     justify-content: flex-start;
     padding-inline: 15px;

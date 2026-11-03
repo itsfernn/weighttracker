@@ -12,11 +12,12 @@ All data stays in the browser using `localStorage`. There is no account, server,
 - Time ranges from 4 weeks to all time
 - Goal weight, target body fat, and target date
 - Progress, remaining distance, and required weekly pace
-- BMI, body fat, lean body mass, fat mass, FFMI, and normalized FFMI
+- BMI, body fat, lean body mass, fat mass, FFMI, and adjusted FFMI
 - Color-coded BMI, body fat, and FFMI ranges with an optional reference sex
 - Latest five weigh-ins on the dashboard with a full-screen history view
 - Edit and delete past weigh-ins from either view
 - CSV import and export for backups or moving between browsers
+- Installable PWA with offline access to the app shell
 - Metric and imperial units
 - Light and dark themes
 - Responsive, mobile-first layout
@@ -31,7 +32,7 @@ python3 -m http.server 4173
 
 Then open <http://localhost:4173>.
 
-Opening `index.html` directly also works in most browsers, but a local server is recommended so storage behavior matches the hosted site.
+Opening `index.html` directly also works in most browsers, but a local server is recommended so storage behavior matches the hosted site. Service workers and PWA installation require a secure context, so use HTTPS or localhost.
 
 ## GitHub Pages
 
@@ -41,7 +42,7 @@ The app is a static site at the repository root, so GitHub Pages can serve it di
 2. Set the source to **Deploy from a branch**.
 3. Choose `main` and `/ (root)`.
 
-No build workflow is required. The `.nojekyll` file prevents Jekyll processing.
+No build workflow is required. The `.nojekyll` file prevents Jekyll processing. The included `manifest.webmanifest`, `sw.js`, and icons enable installability and offline app-shell caching.
 
 ## CSV format
 
@@ -61,7 +62,7 @@ Import merges new rows into existing data and skips duplicate timestamps. The im
 - **Lean body mass** = weight × (1 − body fat percentage / 100)
 - **Fat mass** = weight × body fat percentage / 100
 - **FFMI** = lean body mass / height in meters squared
-- **Normalized FFMI** = FFMI + 6.1 × (1.8 − height in meters)
+- **Adjusted FFMI** = FFMI + 6.3 × (1.8 − height in meters)
 - **Weekly average** = the mean of all weight or body fat readings from Monday through Sunday
 
 BMI is a broad population measure and does not account for body composition. Its categories are not sex-specific for adults. FFMI and body fat reference ranges use the optional reference sex selected in the profile.
