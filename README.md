@@ -8,7 +8,7 @@ All data stays in the browser using `localStorage`. There is no account, server,
 
 - Fast weigh-in entry with the current date and time prefilled
 - Optional body fat percentage and notes on every entry
-- Weight and body fat trend charts using Monday-to-Sunday weekly averages
+- Weight, body fat, and lean mass trend charts using Monday-to-Sunday weekly averages
 - Time ranges from 4 weeks to all time
 - Goal weight, target body fat, and target date
 - Progress, remaining distance, and required weekly pace

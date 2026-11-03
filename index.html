@@ -155,6 +155,7 @@
           <div class="segmented" role="group" aria-label="Chart metric">
             <button type="button" class="segment is-active" data-metric="weight" aria-pressed="true">Weight</button>
             <button type="button" class="segment" data-metric="bodyFat" aria-pressed="false">Body fat</button>
+            <button type="button" class="segment" data-metric="leanMass" aria-pressed="false">Lean mass</button>
           </div>
           <div class="segmented segmented-range" role="group" aria-label="Chart range">
             <button type="button" class="segment" data-range="28" aria-pressed="false">4W</button>
@@ -224,13 +225,6 @@
             <div class="metric-label-row"><div class="metric-label">Body fat</div><span class="metric-tag" id="bodyFatTag" hidden></span></div>
             <div class="metric-value-row"><span class="metric-value" id="metricBodyFatValue">—</span><span class="metric-unit">%</span></div>
             <div class="metric-scale" id="bodyFatScale" hidden></div>
-          </div>
-        </article>
-        <article class="card metric-card">
-          <div class="metric-icon"><svg class="icon" aria-hidden="true"><use href="#i-activity"/></svg></div>
-          <div class="metric-body">
-            <div class="metric-label-row"><div class="metric-label">Lean body mass</div></div>
-            <div class="metric-value-row"><span class="metric-value" id="lbmValue">—</span><span class="metric-unit" id="lbmUnit">kg</span></div>
           </div>
         </article>
         <article class="card metric-card metric-card-ffmi">

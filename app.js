@@ -42,8 +42,6 @@
     compositionSubtitle: document.getElementById("compositionSubtitle"),
     bmiValue: document.getElementById("bmiValue"),
     metricBodyFatValue: document.getElementById("metricBodyFatValue"),
-    lbmValue: document.getElementById("lbmValue"),
-    lbmUnit: document.getElementById("lbmUnit"),
     bmiTag: document.getElementById("bmiTag"),
     bmiScale: document.getElementById("bmiScale"),
     bodyFatTag: document.getElementById("bodyFatTag"),
@@ -408,7 +406,14 @@
   function groupEntriesByWeek(entries, metric) {
     const groups = new Map();
     entries.forEach((entry) => {
-      const value = metric === "weight" ? entry.weightKg : entry.bodyFatPct;
+      const value =
+        metric === "weight"
+          ? entry.weightKg
+          : metric === "leanMass"
+            ? entry.bodyFatPct !== null
+              ? entry.weightKg * (1 - entry.bodyFatPct / 100)
+              : null
+            : entry.bodyFatPct;
       if (!Number.isFinite(value)) return;
       const at = new Date(entry.at);
       const weekStart = startOfWeekMonday(at);
@@ -748,7 +753,6 @@
     const unit = weightUnit();
     const sex = state.profile.referenceSex;
 
-    dom.lbmUnit.textContent = unit;
     dom.compositionSubtitle.textContent = state.profile.heightCm
       ? "Ranges are general fitness references, not medical advice."
       : "Add your height to unlock BMI, lean mass, and FFMI.";
@@ -778,12 +782,6 @@
       dom.metricBodyFatValue.textContent = "—";
       setMetricTag(dom.bodyFatTag, null);
       renderMetricScale(dom.bodyFatScale, null);
-    }
-
-    if (metrics.leanMassKg !== null) {
-      dom.lbmValue.textContent = formatNumber(toDisplayWeight(metrics.leanMassKg), 1);
-    } else {
-      dom.lbmValue.textContent = "—";
     }
 
     const adjustedFfmi = state.profile.ffmiMode === "adjusted";
@@ -819,6 +817,22 @@
         goal: state.goal.bodyFatPct,
         format: (value) => `${formatNumber(value, 1)}%`,
         defaultPadding: 1.2,
+      };
+    }
+    if (ui.chartMetric === "leanMass") {
+      return {
+        key: "leanMass",
+        label: "lean mass",
+        unit: weightUnit(),
+        axisUnit: weightUnit(),
+        value: (entry) =>
+          entry.bodyFatPct !== null
+            ? entry.weightKg * (1 - entry.bodyFatPct / 100)
+            : null,
+        display: (value) => toDisplayWeight(value),
+        goal: null,
+        format: (value) => `${formatNumber(value, 1)} ${weightUnit()}`,
+        defaultPadding: unitSystem() === "imperial" ? 2 : 1,
       };
     }
     return {
@@ -861,18 +875,28 @@
     const config = getChartConfig();
     const now = new Date();
     const metricEntries = state.entries.filter(
-      (entry) => entry[config.key === "bodyFat" ? "bodyFatPct" : "weightKg"] !== null,
+      (entry) => config.value(entry) !== null && config.value(entry) !== undefined,
     );
 
     dom.chartSubtitle.textContent = `Weekly ${config.label} averages${config.unit ? ` in ${config.unit}` : ""} · ${rangeLabel(ui.chartRange)}.`;
 
     if (!metricEntries.length) {
-      showChartEmpty(
-        ui.chartMetric === "bodyFat" ? "No body fat readings yet" : "Your trend starts here",
-        ui.chartMetric === "bodyFat"
-          ? "Add a body fat percentage to a weigh-in and its weekly average will appear here."
-          : "Log a few weigh-ins and your weekly averages will take shape.",
-      );
+      if (ui.chartMetric === "bodyFat") {
+        showChartEmpty(
+          "No body fat readings yet",
+          "Add a body fat percentage to a weigh-in and its weekly average will appear here.",
+        );
+      } else if (ui.chartMetric === "leanMass") {
+        showChartEmpty(
+          "No lean mass readings yet",
+          "Add a body fat percentage to a weigh-in to start the lean mass trend.",
+        );
+      } else {
+        showChartEmpty(
+          "Your trend starts here",
+          "Log a few weigh-ins and your weekly averages will take shape.",
+        );
+      }
       return;
     }
 
