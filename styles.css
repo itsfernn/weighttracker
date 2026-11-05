@@ -933,6 +933,33 @@ svg {
   letter-spacing: .04em;
 }
 
+.chart-svg .chart-ideal-line {
+  stroke: var(--cool);
+  stroke-width: 2;
+  stroke-dasharray: 7 5;
+  opacity: .9;
+}
+
+.chart-svg .chart-ideal-line.is-cool {
+  stroke: var(--cool);
+}
+
+.chart-svg .chart-ideal-line.is-good {
+  stroke: var(--brand);
+}
+
+.chart-svg .chart-ideal-line.is-warm {
+  stroke: var(--orange);
+}
+
+.chart-svg .chart-ideal-line.is-hot {
+  stroke: var(--red);
+}
+
+.chart-svg .chart-ideal-line.is-neutral {
+  stroke: var(--muted);
+}
+
 .chart-svg .chart-area {
   fill: url(#chartAreaGradient);
 }
@@ -1126,6 +1153,32 @@ svg {
   width: 15px;
   height: 0;
   border-top: 1.5px dashed var(--orange);
+}
+
+.legend-ideal {
+  width: 15px;
+  height: 0;
+  border-top: 1.5px dashed var(--muted);
+}
+
+.legend-ideal.is-cool {
+  border-top-color: var(--cool);
+}
+
+.legend-ideal.is-good {
+  border-top-color: var(--brand);
+}
+
+.legend-ideal.is-warm {
+  border-top-color: var(--orange);
+}
+
+.legend-ideal.is-hot {
+  border-top-color: var(--red);
+}
+
+.legend-ideal.is-neutral {
+  border-top-color: var(--muted);
 }
 
 .legend-item.is-hidden {

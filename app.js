@@ -37,6 +37,7 @@
     chartEmptyCopy: document.getElementById("chartEmptyCopy"),
     chartInsight: document.getElementById("chartInsight"),
     goalLegend: document.getElementById("goalLegend"),
+    idealPaceLegend: document.getElementById("idealPaceLegend"),
     compositionSubtitle: document.getElementById("compositionSubtitle"),
     bmiValue: document.getElementById("bmiValue"),
     metricBodyFatValue: document.getElementById("metricBodyFatValue"),
@@ -1040,6 +1041,49 @@
     const weeklyValues = weeklyGroups.map((group) => config.display(group.avg));
     let dataMin = Math.min(...dailyValues, ...weeklyValues);
     let dataMax = Math.max(...dailyValues, ...weeklyValues);
+
+    let idealPace = null;
+    if (config.key === "weight" && state.goal.weightKg !== null) {
+      const goalStart = getGoalStartSnapshot(state.goal);
+      const targetDate = parseDateOnly(state.goal.date);
+      if (
+        goalStart.weightKg !== null &&
+        goalStart.date &&
+        targetDate &&
+        targetDate > goalStart.date
+      ) {
+        const totalMs = targetDate.getTime() - goalStart.date.getTime();
+        const totalWeeks = totalMs / (7 * DAY_MS);
+        const plannedKgPerWeek =
+          (state.goal.weightKg - goalStart.weightKg) / totalWeeks;
+        const category = window.WeighlinePace.classify(
+          plannedKgPerWeek,
+          goalStart.weightKg,
+        );
+        const visibleStart = new Date(
+          Math.max(goalStart.date.getTime(), start.getTime()),
+        );
+        const visibleEnd = new Date(Math.min(targetDate.getTime(), end.getTime()));
+        if (visibleEnd > visibleStart) {
+          const valueAt = (date) =>
+            goalStart.weightKg +
+            ((state.goal.weightKg - goalStart.weightKg) *
+              (date.getTime() - goalStart.date.getTime())) /
+              totalMs;
+          idealPace = {
+            start: visibleStart,
+            end: visibleEnd,
+            startValue: config.display(valueAt(visibleStart)),
+            endValue: config.display(valueAt(visibleEnd)),
+            tone: category.tone,
+            category,
+          };
+          dataMin = Math.min(dataMin, idealPace.startValue, idealPace.endValue);
+          dataMax = Math.max(dataMax, idealPace.startValue, idealPace.endValue);
+        }
+      }
+    }
+
     const dataSpan = dataMax - dataMin;
     const displayGoal = config.goal !== null ? config.display(config.goal) : null;
     const goalTolerance = Math.max(dataSpan * 0.8, config.defaultPadding * 2.5);
@@ -1122,6 +1166,12 @@
       );
     }
 
+    if (idealPace) {
+      parts.push(
+        `<line class="chart-ideal-line is-${idealPace.tone}" x1="${xScale(idealPace.start).toFixed(1)}" y1="${yScale(idealPace.startValue).toFixed(1)}" x2="${xScale(idealPace.end).toFixed(1)}" y2="${yScale(idealPace.endValue).toFixed(1)}"></line>`,
+      );
+    }
+
     const dailyPoints = filtered.map((entry) => ({
       x: xScale(new Date(entry.at)),
       y: yScale(config.display(config.value(entry))),
@@ -1179,6 +1229,13 @@
     dom.chartEmpty.hidden = true;
     dom.chartTooltip.classList.remove("is-visible");
     dom.goalLegend.classList.toggle("is-hidden", !showGoal);
+    dom.idealPaceLegend.classList.toggle("is-hidden", !idealPace);
+    const idealSwatch = dom.idealPaceLegend.querySelector(".legend-ideal");
+    if (idealSwatch) {
+      idealSwatch.className = idealPace
+        ? `legend-ideal is-${idealPace.tone}`
+        : "legend-ideal";
+    }
 
     dom.chartStage.__chartModel = {
       points: weeklyPoints,
@@ -1212,6 +1269,7 @@
     dom.chartEmpty.hidden = false;
     dom.chartTooltip.classList.remove("is-visible");
     dom.goalLegend.classList.add("is-hidden");
+    dom.idealPaceLegend.classList.add("is-hidden");
     dom.chartEmptyTitle.textContent = title;
     dom.chartEmptyCopy.textContent = copy;
     dom.chartInsight.textContent = "";
