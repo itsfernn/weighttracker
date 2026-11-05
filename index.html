@@ -418,10 +418,17 @@
           </span>
           <span class="field-error" id="goalBodyFatError"></span>
         </label>
-        <label class="field field-full">
+        <label class="field">
+          <span class="field-label">Goal start date <span class="optional">optional</span></span>
+          <input id="goalStartDateInput" name="goalStartDate" type="date">
+          <span class="field-hint">Progress starts from the weekly average nearest this date. Defaults to your first weigh-in.</span>
+          <span class="field-error" id="goalStartDateError"></span>
+        </label>
+        <label class="field">
           <span class="field-label">Target date <span class="optional">optional</span></span>
           <input id="goalDateInput" name="goalDate" type="date">
-          <span class="field-hint">A date helps us calculate the weekly pace you need.</span>
+          <span class="field-hint">A target date helps calculate your required weekly pace.</span>
+          <span class="field-error" id="goalDateError"></span>
         </label>
       </div>
 

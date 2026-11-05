@@ -90,7 +90,10 @@
     goalWeightError: document.getElementById("goalWeightError"),
     goalBodyFatInput: document.getElementById("goalBodyFatInput"),
     goalBodyFatError: document.getElementById("goalBodyFatError"),
+    goalStartDateInput: document.getElementById("goalStartDateInput"),
+    goalStartDateError: document.getElementById("goalStartDateError"),
     goalDateInput: document.getElementById("goalDateInput"),
+    goalDateError: document.getElementById("goalDateError"),
     resetButton: document.getElementById("resetButton"),
     confirmDialog: document.getElementById("confirmDialog"),
     confirmForm: document.getElementById("confirmForm"),
@@ -115,7 +118,7 @@
       unitSystem: "metric",
       profile: { heightCm: null, referenceSex: null, ffmiMode: "standard" },
       entries: [],
-      goal: { weightKg: null, bodyFatPct: null, date: null },
+      goal: { weightKg: null, bodyFatPct: null, startDate: null, date: null },
     };
   }
 
@@ -142,8 +145,13 @@
     base.goal.weightKg = Number.isFinite(goalWeight) && goalWeight > 0 ? goalWeight : null;
     base.goal.bodyFatPct = Number.isFinite(goalBodyFat) && goalBodyFat >= 0 ? goalBodyFat : null;
     base.goal.date = typeof goal.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(goal.date) ? goal.date : null;
+    base.goal.startDate =
+      typeof goal.startDate === "string" && /^\d{4}-\d{2}-\d{2}$/.test(goal.startDate)
+        ? goal.startDate
+        : null;
     if (base.goal.weightKg === null) {
       base.goal.bodyFatPct = null;
+      base.goal.startDate = null;
       base.goal.date = null;
     }
 
@@ -444,6 +452,44 @@
       .sort((a, b) => a.weekStart.getTime() - b.weekStart.getTime());
   }
 
+  function getGoalStartSnapshot(goal = state.goal) {
+    const weightWeeks = groupEntriesByWeek(state.entries, "weight");
+    if (!weightWeeks.length) {
+      return { date: null, week: null, weightKg: null };
+    }
+
+    if (!goal.startDate) {
+      const first = weightWeeks[0];
+      return { date: first.weekStart, week: first, weightKg: first.avg };
+    }
+
+    const selectedDate = parseDateOnly(goal.startDate);
+    if (!selectedDate) {
+      const first = weightWeeks[0];
+      return { date: first.weekStart, week: first, weightKg: first.avg };
+    }
+
+    let week = weightWeeks.find(
+      (candidate) =>
+        selectedDate >= candidate.weekStart && selectedDate <= candidate.weekEnd,
+    );
+    if (!week) {
+      let nearestDistance = Infinity;
+      weightWeeks.forEach((candidate) => {
+        const distance = Math.min(
+          Math.abs(selectedDate - candidate.weekStart),
+          Math.abs(selectedDate - candidate.weekEnd),
+        );
+        if (distance < nearestDistance) {
+          nearestDistance = distance;
+          week = candidate;
+        }
+      });
+    }
+
+    return { date: selectedDate, week, weightKg: week ? week.avg : null };
+  }
+
   function getWeeklySnapshot() {
     const weightWeeks = groupEntriesByWeek(state.entries, "weight");
     const bodyFatWeeks = groupEntriesByWeek(state.entries, "bodyFat");
@@ -726,7 +772,9 @@
       }
 
       if (metrics.weightAvgKg !== null) {
-        const startWeight = metrics.weightWeeks[0]?.avg ?? metrics.weightAvgKg;
+        const startSnapshot = getGoalStartSnapshot(state.goal);
+        const startWeight =
+          startSnapshot.weightKg ?? metrics.weightWeeks[0]?.avg ?? metrics.weightAvgKg;
         const goal = getGoalProgress(metrics.weightAvgKg, startWeight, targetWeight);
         const progressPercent = Math.round(goal.progress * 100);
         dom.goalProgressWrap.hidden = false;
@@ -1468,6 +1516,8 @@
         : "";
     dom.goalBodyFatInput.value =
       state.goal.bodyFatPct !== null ? String(round(state.goal.bodyFatPct, 1)) : "";
+    dom.goalStartDateInput.value = state.goal.startDate || "";
+    dom.goalStartDateInput.max = localDateStamp();
     dom.goalDateInput.value = state.goal.date || "";
     dom.referenceSexInput.value = state.profile.referenceSex || "";
     const ffmiMode = state.profile.ffmiMode === "adjusted" ? "adjusted" : "standard";
@@ -1595,6 +1645,22 @@
       }
     }
 
+    let goalStartDate = null;
+    if (dom.goalStartDateInput.value) {
+      const parsedStart = parseDateOnly(dom.goalStartDateInput.value);
+      if (!parsedStart) {
+        setFieldError(dom.goalStartDateError, dom.goalStartDateInput, "Choose a valid start date.");
+        valid = false;
+        firstInvalid = firstInvalid || dom.goalStartDateInput;
+      } else if (parsedStart.getTime() > startOfDay(new Date()).getTime()) {
+        setFieldError(dom.goalStartDateError, dom.goalStartDateInput, "Start date can't be in the future.");
+        valid = false;
+        firstInvalid = firstInvalid || dom.goalStartDateInput;
+      } else {
+        goalStartDate = dom.goalStartDateInput.value;
+      }
+    }
+
     let goalBodyFatPct = null;
     if (dom.goalBodyFatInput.value.trim() !== "") {
       const bodyFat = Number(dom.goalBodyFatInput.value);
@@ -1607,7 +1673,10 @@
       }
     }
 
-    if (goalWeightKg === null && (goalBodyFatPct !== null || dom.goalDateInput.value)) {
+    if (
+      goalWeightKg === null &&
+      (goalBodyFatPct !== null || dom.goalStartDateInput.value || dom.goalDateInput.value)
+    ) {
       setFieldError(
         dom.goalWeightError,
         dom.goalWeightInput,
@@ -1615,6 +1684,20 @@
       );
       valid = false;
       firstInvalid = firstInvalid || dom.goalWeightInput;
+    }
+
+    if (goalStartDate && dom.goalDateInput.value) {
+      const startDate = parseDateOnly(goalStartDate);
+      const targetDate = parseDateOnly(dom.goalDateInput.value);
+      if (startDate && targetDate && startDate > targetDate) {
+        setFieldError(
+          dom.goalStartDateError,
+          dom.goalStartDateInput,
+          "Start date must be before the target date.",
+        );
+        valid = false;
+        firstInvalid = firstInvalid || dom.goalStartDateInput;
+      }
     }
 
     if (!valid) {
@@ -1632,10 +1715,11 @@
         ? "adjusted"
         : "standard";
     state.goal = goalWeightKg === null
-      ? { weightKg: null, bodyFatPct: null, date: null }
+      ? { weightKg: null, bodyFatPct: null, startDate: null, date: null }
       : {
           weightKg: goalWeightKg,
           bodyFatPct: goalBodyFatPct,
+          startDate: goalStartDate,
           date: dom.goalDateInput.value || null,
         };
 
