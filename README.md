@@ -15,7 +15,7 @@ All data stays in the browser using `localStorage`. There is no account, server,
 - Progress, remaining distance, and required weekly pace with pace categories
 - Colored pace flare for gentle, steady, aggressive, and very aggressive cuts or bulks
 - Dashed ideal-pace line on the weight chart
-- Separate goal planner with projections and what-if weekly rates
+- Separate goal planner with range scales, projections, and what-if weekly rates
 - BMI, body fat, lean body mass, fat mass, FFMI, and adjusted FFMI
 - Color-coded BMI, body fat, and FFMI ranges with an optional reference sex
 - Optional adjusted FFMI display normalized to 1.80 m

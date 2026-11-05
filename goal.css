@@ -238,21 +238,25 @@
 }
 
 .projection-item {
+  min-height: 56px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.projection-item-head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 16px;
-  min-height: 56px;
-  padding: 11px 0;
-  border-bottom: 1px solid var(--border);
 }
 
 .projection-item:last-child {
   border-bottom: 0;
 }
 
-.projection-item > div {
+.projection-item-head > div {
   display: flex;
+  min-width: 0;
   flex-direction: column;
   gap: 2px;
 }
@@ -278,6 +282,34 @@
   font-variant-numeric: tabular-nums;
   letter-spacing: -.04em;
   white-space: nowrap;
+}
+
+.planner-metric-scale {
+  margin-top: 9px;
+}
+
+.planner-metric-scale .metric-scale-track {
+  height: 16px;
+}
+
+.planner-metric-scale .metric-scale-bands {
+  height: 8px;
+  margin-top: 3px;
+}
+
+.metric-scale-fill {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  border: 1px solid color-mix(in srgb, var(--text) 24%, transparent);
+  border-radius: 99px;
+  background: color-mix(in srgb, var(--text) 16%, transparent);
+  pointer-events: none;
+}
+
+.metric-scale-marker.is-target {
+  background: var(--orange);
+  box-shadow: 0 0 0 2px var(--surface-inset);
 }
 
 .planner-note {
@@ -484,6 +516,10 @@
 
   .projection-item strong {
     font-size: 20px;
+  }
+
+  .projection-item-head {
+    gap: 8px;
   }
 
   .scenario-output {

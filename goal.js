@@ -34,6 +34,9 @@
     lbmNote: document.getElementById("plannerLbmNote"),
     ffmiValue: document.getElementById("plannerFfmiValue"),
     ffmiNote: document.getElementById("plannerFfmiNote"),
+    bmiScale: document.getElementById("plannerBmiScale"),
+    bfScale: document.getElementById("plannerBfScale"),
+    ffmiScale: document.getElementById("plannerFfmiScale"),
     projectionNote: document.getElementById("plannerProjectionNote"),
     scenarioRate: document.getElementById("scenarioRate"),
     scenarioRateUnit: document.getElementById("scenarioRateUnit"),
@@ -464,6 +467,99 @@
     return "Class 3 obesity range";
   }
 
+  function getBmiScaleContext(value) {
+    const bands = [
+      { min: 15, max: 18.5, label: "Underweight", tone: "cool" },
+      { min: 18.5, max: 25, label: "Healthy weight", tone: "good" },
+      { min: 25, max: 30, label: "Overweight", tone: "warm" },
+      { min: 30, max: 35, label: "Class 1 obesity", tone: "warm" },
+      { min: 35, max: 40, label: "Class 2 obesity", tone: "hot" },
+      { min: 40, max: 45, label: "Class 3 obesity", tone: "hot" },
+    ];
+    return { min: 15, max: 45, bands, value };
+  }
+
+  function getBodyFatScaleContext(value, sex) {
+    if (!sex) return null;
+    const bands = sex === "female"
+      ? [
+          { min: 0, max: 14, label: "Very lean", tone: "cool" },
+          { min: 14, max: 21, label: "Athletic", tone: "good" },
+          { min: 21, max: 25, label: "Fitness", tone: "good" },
+          { min: 25, max: 32, label: "Average", tone: "neutral" },
+          { min: 32, max: 50, label: "Above average", tone: "warm" },
+        ]
+      : [
+          { min: 0, max: 6, label: "Very lean", tone: "cool" },
+          { min: 6, max: 14, label: "Athletic", tone: "good" },
+          { min: 14, max: 18, label: "Fitness", tone: "good" },
+          { min: 18, max: 25, label: "Average", tone: "neutral" },
+          { min: 25, max: 50, label: "Above average", tone: "warm" },
+        ];
+    return { min: 0, max: 50, bands, value };
+  }
+
+  function getFfmiScaleContext(value, sex) {
+    if (!sex) return null;
+    const bands = sex === "female"
+      ? [
+          { min: 12, max: 15, label: "Below average", tone: "cool" },
+          { min: 15, max: 17, label: "Average", tone: "neutral" },
+          { min: 17, max: 19, label: "Above average", tone: "good" },
+          { min: 19, max: 21, label: "Excellent", tone: "good" },
+          { min: 21, max: 23, label: "Superior", tone: "good" },
+          { min: 23, max: 27, label: "Exceptional", tone: "warm" },
+        ]
+      : [
+          { min: 14, max: 18, label: "Below average", tone: "cool" },
+          { min: 18, max: 20, label: "Average", tone: "neutral" },
+          { min: 20, max: 22, label: "Above average", tone: "good" },
+          { min: 22, max: 23, label: "Excellent", tone: "good" },
+          { min: 23, max: 26, label: "Superior", tone: "good" },
+          { min: 26, max: 28, label: "Exceptional", tone: "warm" },
+          { min: 28, max: 32, label: "Very exceptional", tone: "hot" },
+        ];
+    return { min: bands[0].min, max: bands.at(-1).max, bands, value };
+  }
+
+  function renderGoalScale(element, context, lowValue, highValue, targetValue = null) {
+    if (!element) return;
+    if (
+      !context ||
+      !Number.isFinite(lowValue) ||
+      !Number.isFinite(highValue)
+    ) {
+      element.hidden = true;
+      element.innerHTML = "";
+      return;
+    }
+    const width = context.max - context.min;
+    const lowPct = clamp(((lowValue - context.min) / width) * 100, 0, 100);
+    const highPct = clamp(((highValue - context.min) / width) * 100, 0, 100);
+    const isRange = highPct - lowPct > 0.2;
+    const markers = isRange
+      ? `<span class="metric-scale-marker" style="left:${lowPct.toFixed(2)}%"></span><span class="metric-scale-marker" style="left:${highPct.toFixed(2)}%"></span>`
+      : `<span class="metric-scale-marker" style="left:${lowPct.toFixed(2)}%"></span>`;
+    const fill = isRange
+      ? `<span class="metric-scale-fill" style="left:${lowPct.toFixed(2)}%;width:${(highPct - lowPct).toFixed(2)}%"></span>`
+      : "";
+    const targetMarker =
+      targetValue !== null && Number.isFinite(targetValue)
+        ? `<span class="metric-scale-marker is-target" style="left:${clamp(((targetValue - context.min) / width) * 100, 0, 100).toFixed(2)}%"></span>`
+        : "";
+    element.hidden = false;
+    element.setAttribute(
+      "aria-label",
+      `${context.label || "Reference range"}: ${formatNumber(lowValue, 1)}${isRange ? ` to ${formatNumber(highValue, 1)}` : ""}`,
+    );
+    element.innerHTML = `<div class="metric-scale-track"><div class="metric-scale-bands">${context.bands
+      .map((band) => {
+        const bandWidth = ((band.max - band.min) / width) * 100;
+        return `<span class="metric-scale-band is-${band.tone}" style="width:${bandWidth.toFixed(2)}%" title="${band.label}: ${formatNumber(band.min, 1)}–${formatNumber(band.max, 1)}"></span>`;
+      })
+      .join("")}</div>${fill}${markers}${targetMarker}</div>`;
+  }
+
   function renderSummary(snapshot, metrics) {
     const goal = state.goal;
     const unit = weightUnit();
@@ -551,6 +647,12 @@
       metrics.heightM ? goal.weightKg / (metrics.heightM * metrics.heightM) : null;
     dom.bmiValue.textContent = targetBmi !== null ? formatNumber(targetBmi, 1) : "—";
     dom.bmiNote.textContent = targetBmi !== null ? bmiLabel(targetBmi) : "Add your height in settings";
+    renderGoalScale(
+      dom.bmiScale,
+      targetBmi !== null ? getBmiScaleContext(targetBmi) : null,
+      targetBmi,
+      targetBmi,
+    );
 
     const pace = getGoalPace(snapshot);
     let category = pace?.kind === "pace" ? pace.category : null;
@@ -577,6 +679,19 @@
       dom.ffmiValue.textContent = ffmiValues.length
         ? `${formatNumber(Math.min(...ffmiValues), 1)}–${formatNumber(Math.max(...ffmiValues), 1)}`
         : "—";
+      if (ffmiValues.length) {
+        renderGoalScale(
+          dom.ffmiScale,
+          getFfmiScaleContext(
+            (Math.min(...ffmiValues) + Math.max(...ffmiValues)) / 2,
+            state.profile.referenceSex,
+          ),
+          Math.min(...ffmiValues),
+          Math.max(...ffmiValues),
+        );
+      } else {
+        renderGoalScale(dom.ffmiScale, null, null, null);
+      }
       dom.ffmiNote.textContent = metrics.heightM
         ? state.profile.ffmiMode === "adjusted"
           ? "Adjusted to 1.80 m"
@@ -598,6 +713,14 @@
       const lowShare = Math.round(projection.shareRange[0] * 100);
       const highShare = Math.round(projection.shareRange[1] * 100);
       dom.projectionNote.textContent = `Based on ${formatNumber(metrics.bodyFatPct, 1)}% body fat and ${formatWeight(metrics.leanMassKg)} lean mass. Assumes ${lowShare}–${highShare}% of ${gain ? "gain" : "loss"} is ${gain ? "lean mass" : "lean mass loss"}.`;
+      const bfMidpoint = (projection.bodyFatLow + projection.bodyFatHigh) / 2;
+      renderGoalScale(
+        dom.bfScale,
+        getBodyFatScaleContext(bfMidpoint, state.profile.referenceSex),
+        projection.bodyFatLow,
+        projection.bodyFatHigh,
+        goal.bodyFatPct,
+      );
     } else {
       dom.bfValue.textContent = "—";
       dom.lbmValue.textContent = "—";
@@ -606,6 +729,8 @@
       dom.lbmNote.textContent = "Requires body fat";
       dom.ffmiNote.textContent = "Requires body fat and height";
       dom.projectionNote.textContent = "Log body fat and height to model body-composition changes.";
+      renderGoalScale(dom.bfScale, null, null, null);
+      renderGoalScale(dom.ffmiScale, null, null, null);
     }
 
     if (metrics.heightCm === null) {
@@ -711,13 +836,16 @@
         ? "Already at goal"
         : "This pace does not move toward the goal";
 
+    const assumption = projection && category.key !== "maintain"
+      ? ` Assumes ${Math.round(projection.shareRange[0] * 100)}–${Math.round(projection.shareRange[1] * 100)}% of the ${rateKg >= 0 ? "gain" : "loss"} is lean mass.`
+      : "";
     if (!directionMatches) {
       dom.scenarioCopy.textContent =
-        "This weekly change moves away from your target weight. Reverse the sign or adjust the goal.";
+        `This weekly change moves away from your target weight. Reverse the sign or adjust the goal.${assumption}`;
     } else if (targetDate) {
-      dom.scenarioCopy.textContent = `At ${formatNumber(Math.abs(displayRate), 1)} ${weightUnit()}/wk, you would weigh about ${formatWeight(outputWeight)} by your target date. ${outputBf ? `Estimated body fat: ${outputBf}.` : ""}`;
+      dom.scenarioCopy.textContent = `At ${formatNumber(Math.abs(displayRate), 1)} ${weightUnit()}/wk, you would weigh about ${formatWeight(outputWeight)} by your target date. ${outputBf ? `Estimated body fat: ${outputBf}.` : ""}${assumption}`;
     } else {
-      dom.scenarioCopy.textContent = `At ${formatNumber(Math.abs(displayRate), 1)} ${weightUnit()}/wk, you would reach your goal around ${etaDate ? formatDateShort(etaDate) : "an unknown date"}. ${outputBf ? `Estimated body fat at goal: ${outputBf}.` : ""}`;
+      dom.scenarioCopy.textContent = `At ${formatNumber(Math.abs(displayRate), 1)} ${weightUnit()}/wk, you would reach your goal around ${etaDate ? formatDateShort(etaDate) : "an unknown date"}. ${outputBf ? `Estimated body fat at goal: ${outputBf}.` : ""}${assumption}`;
     }
   }
 

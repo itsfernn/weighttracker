@@ -122,20 +122,31 @@
 
           <div class="projection-list">
             <div class="projection-item">
-              <div><span>BMI</span><small id="plannerBmiNote"></small></div>
-              <strong id="plannerBmiValue">—</strong>
+              <div class="projection-item-head">
+                <div><span>BMI</span><small id="plannerBmiNote"></small></div>
+                <strong id="plannerBmiValue">—</strong>
+              </div>
+              <div class="metric-scale planner-metric-scale" id="plannerBmiScale" hidden></div>
             </div>
             <div class="projection-item">
-              <div><span>Body fat</span><small id="plannerBfNote"></small></div>
-              <strong id="plannerBfValue">—</strong>
+              <div class="projection-item-head">
+                <div><span>Body fat</span><small id="plannerBfNote"></small></div>
+                <strong id="plannerBfValue">—</strong>
+              </div>
+              <div class="metric-scale planner-metric-scale" id="plannerBfScale" hidden></div>
             </div>
             <div class="projection-item">
-              <div><span>Lean mass</span><small id="plannerLbmNote"></small></div>
-              <strong id="plannerLbmValue">—</strong>
+              <div class="projection-item-head">
+                <div><span>Lean mass</span><small id="plannerLbmNote"></small></div>
+                <strong id="plannerLbmValue">—</strong>
+              </div>
             </div>
             <div class="projection-item">
-              <div><span>FFMI</span><small id="plannerFfmiNote"></small></div>
-              <strong id="plannerFfmiValue">—</strong>
+              <div class="projection-item-head">
+                <div><span>FFMI</span><small id="plannerFfmiNote"></small></div>
+                <strong id="plannerFfmiValue">—</strong>
+              </div>
+              <div class="metric-scale planner-metric-scale" id="plannerFfmiScale" hidden></div>
             </div>
           </div>
 
@@ -187,7 +198,7 @@
         <div class="planner-hints-list" id="plannerHints"></div>
       </section>
 
-      <p class="planner-disclaimer">Projections use weekly averages and a rate-based body-composition model. They are general planning estimates, not medical predictions. Water, glycogen, training, nutrition, and measurement error can all change the outcome.</p>
+      <p class="planner-disclaimer">Projections use weekly averages and a rate-based body-composition model. Faster bulks and cuts use a less favorable lean-share assumption, so a stronger bulk is expected to add more fat. These are general planning estimates, not medical predictions. Water, glycogen, training, nutrition, and measurement error can all change the outcome.</p>
     </div>
   </main>
 
