@@ -586,7 +586,8 @@ svg {
 }
 
 .overview-card {
-  min-height: 236px;
+  min-height: 200px;
+  padding: 18px;
 }
 
 .overview-primary {
@@ -2467,21 +2468,37 @@ svg {
   }
 
   .stat-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
   }
 
   .stat-card {
-    padding: 15px 14px;
+    min-height: 0;
+    padding: 13px;
   }
 
   .overview-card {
-    min-height: 210px;
+    min-height: 0;
+    aspect-ratio: 1 / 1;
+    padding: 13px;
+  }
+
+  .stat-top {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .stat-meta,
+  .overview-delta,
+  .overview-secondary-note {
+    display: none;
   }
 
   .stat-label {
     gap: 5px;
-    font-size: 9.5px;
-    letter-spacing: .05em;
+    font-size: 9px;
+    letter-spacing: .045em;
   }
 
   .stat-label .icon {
@@ -2489,20 +2506,37 @@ svg {
     height: 12px;
   }
 
-  .stat-meta {
-    font-size: 9px;
+  .overview-primary {
+    margin-top: 8px;
   }
 
-  .stat-value {
-    font-size: 1.95rem;
+  .stat-value,
+  .stat-goal .stat-value {
+    font-size: 1.8rem;
   }
 
   .stat-unit {
     font-size: 10px;
   }
 
+  .overview-divider {
+    margin: 10px 0 8px;
+  }
+
+  .overview-secondary {
+    min-height: 0;
+  }
+
+  .overview-secondary-label {
+    font-size: 8.5px;
+  }
+
+  .overview-secondary-value strong {
+    font-size: 18px;
+  }
+
   .stat-foot {
-    min-height: 28px;
+    min-height: 0;
   }
 
   .metric-value {
