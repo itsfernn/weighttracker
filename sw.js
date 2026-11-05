@@ -1,10 +1,13 @@
-const CACHE_NAME = "weighline-shell-v5";
+const CACHE_NAME = "weighline-shell-v6";
 const APP_SHELL = [
   "./",
   "./index.html",
+  "./goal.html",
   "./styles.css",
+  "./goal.css",
   "./pace.js",
   "./app.js",
+  "./goal.js",
   "./favicon.svg",
   "./manifest.webmanifest",
   "./icons/weighline-icon-192.png",
@@ -45,14 +48,17 @@ self.addEventListener("fetch", (event) => {
   if (url.origin !== self.location.origin) return;
 
   if (request.mode === "navigate") {
+    const fallback = url.pathname.endsWith("/goal.html")
+      ? "./goal.html"
+      : "./index.html";
     event.respondWith(
       fetch(request)
         .then((response) => {
           const copy = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put("./index.html", copy));
+          caches.open(CACHE_NAME).then((cache) => cache.put(fallback, copy));
           return response;
         })
-        .catch(() => caches.match("./index.html")),
+        .catch(() => caches.match(fallback)),
     );
     return;
   }

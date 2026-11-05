@@ -10,6 +10,19 @@
   "background_color": "#0b100e",
   "theme_color": "#0b100e",
   "categories": ["health", "fitness", "lifestyle"],
+  "shortcuts": [
+    {
+      "name": "Goal planner",
+      "short_name": "Plan goal",
+      "url": "./goal.html",
+      "icons": [
+        {
+          "src": "./icons/weighline-icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
   "icons": [
     {
       "src": "./icons/weighline-icon-192.png",

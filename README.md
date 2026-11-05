@@ -9,9 +9,13 @@ All data stays in the browser using `localStorage`. There is no account, server,
 - Fast weigh-in entry with the current date and time prefilled
 - Optional body fat percentage and notes on every entry
 - Weight, body fat, and lean mass trend charts using Monday-to-Sunday weekly averages
+- Body-composition stats and goal progress calculated from weekly averages
 - Time ranges from 4 weeks to all time
-- Goal weight, target body fat, and target date
-- Progress, remaining distance, and required weekly pace
+- Goal weight, target body fat, goal start date, and target date
+- Progress, remaining distance, and required weekly pace with pace categories
+- Colored pace flare for gentle, steady, aggressive, and very aggressive cuts or bulks
+- Dashed ideal-pace line on the weight chart
+- Separate goal planner with projections and what-if weekly rates
 - BMI, body fat, lean body mass, fat mass, FFMI, and adjusted FFMI
 - Color-coded BMI, body fat, and FFMI ranges with an optional reference sex
 - Optional adjusted FFMI display normalized to 1.80 m
@@ -65,10 +69,17 @@ Import merges new rows into existing data and skips duplicate timestamps. The im
 - **FFMI** = lean body mass / height in meters squared
 - **Adjusted FFMI** = FFMI + 6.3 × (1.8 − height in meters). Toggle between standard and adjusted FFMI in settings.
 - **Weekly average** = the mean of all weight or body fat readings from Monday through Sunday
+- **Required weekly pace** = (target weight − current weekly average) / weeks remaining
+- **Pace category** = required weekly change as a percentage of body weight:
+  - Cut: gentle under 0.25%, steady 0.25–0.75%, aggressive 0.75–1.0%, very aggressive above 1.0%
+  - Bulk: gentle under 0.1%, lean gain 0.1–0.3%, moderate 0.3–0.5%, aggressive above 0.5%
+- **Projected body-fat range** = model the target weight using an assumed lean-gain or lean-loss share. The planner uses range assumptions that get less favorable as the required pace becomes more aggressive.
 
 BMI is a broad population measure and does not account for body composition. Its categories are not sex-specific for adults. FFMI and body fat reference ranges use the optional reference sex selected in the profile.
 
 FFMI categories are contextual fitness benchmarks, not a health diagnosis. The highest ranges are rare naturally; measurement error, training history, genetics, and PED use can all affect the number. Use trends and the full body composition picture rather than a single reading.
+
+The goal planner's body-fat projections are modeled estimates, not probabilities. They assume a general population share of weight change comes from lean mass or fat based on pace category. Water, glycogen, training, nutrition, measurement error, and individual variation can all change the real outcome.
 
 ## Privacy and backups
 

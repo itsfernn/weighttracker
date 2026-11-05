@@ -50,6 +50,7 @@
     <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></symbol>
     <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol>
     <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+    <symbol id="i-arrow-up-right" viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></symbol>
   </svg>
 
   <header class="topbar">
@@ -117,10 +118,13 @@
         </div>
       </article>
 
-      <article class="stat-card overview-card stat-goal" id="goalCard">
+      <a class="stat-card overview-card stat-goal" id="goalCard" href="goal.html" aria-label="Open goal planner">
         <div class="stat-top">
           <span class="stat-label"><svg class="icon" aria-hidden="true"><use href="#i-target"/></svg>Goal</span>
-          <span class="stat-meta" id="goalDate">Not set</span>
+          <span class="goal-meta">
+            <span class="stat-meta" id="goalDate">Not set</span>
+            <svg class="icon goal-arrow" aria-hidden="true"><use href="#i-arrow-up-right"/></svg>
+          </span>
         </div>
         <div class="overview-primary">
           <div class="stat-value-row">
@@ -135,7 +139,7 @@
             <div class="overview-secondary-value"><strong id="goalBodyFatValue">—</strong><span>%</span></div>
           </div>
         </div>
-      </article>
+      </a>
     </section>
 
     <section class="trend-section" aria-labelledby="trendHeading">

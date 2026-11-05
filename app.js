@@ -820,6 +820,10 @@
 
     const weeksLeft = daysLeft / 7;
     const requiredKgPerWeek = (goal.weightKg - currentWeight) / weeksLeft;
+    if (!window.WeighlinePace?.classify) {
+      setPaceFlare("Pace guidance unavailable", "neutral");
+      return;
+    }
     const category = window.WeighlinePace.classify(requiredKgPerWeek, currentWeight);
 
     if (category.direction === "maintain") {
@@ -1043,7 +1047,11 @@
     let dataMax = Math.max(...dailyValues, ...weeklyValues);
 
     let idealPace = null;
-    if (config.key === "weight" && state.goal.weightKg !== null) {
+    if (
+      config.key === "weight" &&
+      state.goal.weightKg !== null &&
+      window.WeighlinePace?.classify
+    ) {
       const goalStart = getGoalStartSnapshot(state.goal);
       const targetDate = parseDateOnly(state.goal.date);
       if (
@@ -2281,6 +2289,11 @@
   }
 
   init();
+
+  if (window.location.hash === "#settings") {
+    history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
+    openSettings();
+  }
 
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {

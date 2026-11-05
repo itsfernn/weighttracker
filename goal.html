@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Plan a weight goal with projected body composition, required pace, and scenario planning.">
+  <meta name="theme-color" content="#0b100e">
+  <title>Goal planner — Weighline</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/weighline-icon-apple-touch.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Weighline">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="goal.css">
+  <script>
+    (() => {
+      try {
+        const saved = localStorage.getItem("weighline:theme");
+        const dark = saved ? saved === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+        document.documentElement.dataset.theme = dark ? "dark" : "light";
+        const themeColor = document.querySelector('meta[name="theme-color"]');
+        if (themeColor) themeColor.content = dark ? "#0b100e" : "#f2f4ed";
+      } catch {
+        document.documentElement.dataset.theme = "dark";
+      }
+    })();
+  </script>
+</head>
+<body class="planner-page">
+  <svg class="icon-sprite" aria-hidden="true">
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M6.35 17.65l-1.42 1.42M19.07 4.93l-1.42 1.42"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/></symbol>
+    <symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="M19 12H5m0 0 6-6m-6 6 6 6"/></symbol>
+    <symbol id="i-arrow-up-right" viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></symbol>
+    <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1"/></symbol>
+  </svg>
+
+  <header class="topbar">
+    <div class="shell topbar-inner">
+      <a class="brand" href="index.html" aria-label="Weighline dashboard">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 28 28" fill="none">
+            <path d="M5.5 19.5 10 12l4 5.5 3.5-4.5 5 6.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="21.5" cy="7.5" r="2" fill="currentColor"/>
+          </svg>
+        </span>
+        <span class="brand-name">weighline</span>
+      </a>
+      <div class="topbar-actions">
+        <a class="button button-secondary button-compact planner-back" href="index.html">
+          <svg class="icon" aria-hidden="true"><use href="#i-arrow-left"/></svg>
+          Dashboard
+        </a>
+        <button class="icon-button" id="themeToggle" type="button" aria-label="Switch to light theme">
+          <svg class="icon theme-icon-dark" aria-hidden="true"><use href="#i-sun"/></svg>
+          <svg class="icon theme-icon-light" aria-hidden="true"><use href="#i-moon"/></svg>
+        </button>
+        <a class="icon-button" href="index.html#settings" aria-label="Edit goal settings">
+          <svg class="icon" aria-hidden="true"><use href="#i-arrow-up-right"/></svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="shell planner-main">
+    <section class="planner-intro">
+      <p class="eyebrow"><span class="eyebrow-dot"></span>Goal planner</p>
+      <h1>Plan the <em>path</em>.</h1>
+      <p class="intro-copy">See the pace your goal requires, where it is likely to put your body composition, and what a different weekly rate would change.</p>
+    </section>
+
+    <section class="card planner-empty" id="plannerEmpty" hidden>
+      <div class="planner-empty-icon"><svg class="icon" aria-hidden="true"><use href="#i-target"/></svg></div>
+      <p class="section-kicker">Nothing to plan yet</p>
+      <h2 id="plannerEmptyTitle">Set a goal first</h2>
+      <p id="plannerEmptyCopy">Add a target weight in settings, then come back here to see the required pace and projected body composition.</p>
+      <a class="button button-primary" href="index.html#settings">Set up a goal</a>
+    </section>
+
+    <div id="plannerContent" hidden>
+      <section class="card planner-summary" aria-labelledby="plannerSummaryTitle">
+        <div class="planner-summary-top">
+          <div>
+            <p class="section-kicker" id="plannerSummaryTitle">Target</p>
+            <div class="planner-target"><span id="plannerTarget">—</span><span id="plannerTargetUnit">kg</span></div>
+            <p class="planner-target-meta" id="plannerTargetMeta"></p>
+          </div>
+          <div class="planner-summary-side">
+            <span class="pace-flare" id="plannerPaceFlare" hidden></span>
+            <a class="text-button" href="index.html#settings">Edit goal <span aria-hidden="true">→</span></a>
+          </div>
+        </div>
+
+        <div class="planner-progress">
+          <div class="goal-progress">
+            <div class="goal-progress-track"><span id="plannerProgressBar"></span></div>
+            <span class="goal-progress-label" id="plannerProgressPercent">—</span>
+          </div>
+          <p class="planner-progress-meta" id="plannerProgressMeta"></p>
+        </div>
+
+        <div class="planner-summary-grid">
+          <div class="planner-fact"><span>Start</span><strong id="plannerStart">—</strong><em id="plannerStartMeta"></em></div>
+          <div class="planner-fact"><span>Current weekly average</span><strong id="plannerCurrent">—</strong><em id="plannerCurrentMeta"></em></div>
+          <div class="planner-fact"><span>Remaining</span><strong id="plannerRemaining">—</strong><em id="plannerRemainingMeta"></em></div>
+          <div class="planner-fact"><span>Target date</span><strong id="plannerDeadline">—</strong><em id="plannerDeadlineMeta"></em></div>
+        </div>
+      </section>
+
+      <div class="planner-grid">
+        <section class="card planner-card" aria-labelledby="projectionTitle">
+          <div class="planner-card-head">
+            <div>
+              <p class="section-kicker">Projection</p>
+              <h2 id="projectionTitle">At your goal</h2>
+            </div>
+            <span class="metric-tag is-neutral">Modeled estimate</span>
+          </div>
+
+          <div class="projection-list">
+            <div class="projection-item">
+              <div><span>BMI</span><small id="plannerBmiNote"></small></div>
+              <strong id="plannerBmiValue">—</strong>
+            </div>
+            <div class="projection-item">
+              <div><span>Body fat</span><small id="plannerBfNote"></small></div>
+              <strong id="plannerBfValue">—</strong>
+            </div>
+            <div class="projection-item">
+              <div><span>Lean mass</span><small id="plannerLbmNote"></small></div>
+              <strong id="plannerLbmValue">—</strong>
+            </div>
+            <div class="projection-item">
+              <div><span>FFMI</span><small id="plannerFfmiNote"></small></div>
+              <strong id="plannerFfmiValue">—</strong>
+            </div>
+          </div>
+
+          <p class="planner-note" id="plannerProjectionNote"></p>
+        </section>
+
+        <section class="card planner-card" aria-labelledby="scenarioTitle">
+          <div class="planner-card-head">
+            <div>
+              <p class="section-kicker">What if</p>
+              <h2 id="scenarioTitle">Try a different pace</h2>
+            </div>
+            <span class="pace-flare" id="scenarioPaceFlare" hidden></span>
+          </div>
+
+          <label class="field planner-rate-field">
+            <span class="field-label">Weekly change</span>
+            <span class="input-wrap">
+              <input id="scenarioRate" type="number" inputmode="decimal" step="0.05" autocomplete="off">
+              <span class="input-suffix" id="scenarioRateUnit">kg/wk</span>
+            </span>
+            <span class="field-hint">Negative for a cut, positive for a gain.</span>
+          </label>
+
+          <div class="scenario-output" aria-live="polite">
+            <div class="scenario-output-item">
+              <span id="scenarioWeightLabel">At target date</span>
+              <strong id="scenarioWeight">—</strong>
+              <em id="scenarioBf">—</em>
+            </div>
+            <div class="scenario-output-item">
+              <span>Goal ETA at this pace</span>
+              <strong id="scenarioEta">—</strong>
+              <em id="scenarioEtaMeta"></em>
+            </div>
+          </div>
+
+          <p class="planner-note" id="scenarioCopy"></p>
+        </section>
+      </div>
+
+      <section class="card planner-hints" aria-labelledby="hintsTitle">
+        <div class="planner-card-head">
+          <div>
+            <p class="section-kicker">Guidance</p>
+            <h2 id="hintsTitle">What this means</h2>
+          </div>
+        </div>
+        <div class="planner-hints-list" id="plannerHints"></div>
+      </section>
+
+      <p class="planner-disclaimer">Projections use weekly averages and a rate-based body-composition model. They are general planning estimates, not medical predictions. Water, glycogen, training, nutrition, and measurement error can all change the outcome.</p>
+    </div>
+  </main>
+
+  <footer class="planner-footer shell">
+    <a class="text-button" href="index.html"><svg class="icon" aria-hidden="true"><use href="#i-arrow-left"/></svg> Back to dashboard</a>
+    <span>Private by design. Your data stays in this browser.</span>
+  </footer>
+
+  <script src="pace.js" defer></script>
+  <script src="goal.js" defer></script>
+</body>
+</html>
