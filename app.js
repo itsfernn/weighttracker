@@ -22,14 +22,12 @@
     goalDate: document.getElementById("goalDate"),
     goalValue: document.getElementById("goalValue"),
     goalUnit: document.getElementById("goalUnit"),
-    goalProgressWrap: document.getElementById("goalProgressWrap"),
     goalProgressBar: document.getElementById("goalProgressBar"),
     goalProgressLabel: document.getElementById("goalProgressLabel"),
-    goalFoot: document.getElementById("goalFoot"),
+    goalPaceFlare: document.getElementById("goalPaceFlare"),
     goalDivider: document.getElementById("goalDivider"),
     goalBodyFatRow: document.getElementById("goalBodyFatRow"),
     goalBodyFatValue: document.getElementById("goalBodyFatValue"),
-    goalBodyFatNote: document.getElementById("goalBodyFatNote"),
     chartSubtitle: document.getElementById("chartSubtitle"),
     chartStage: document.getElementById("chartStage"),
     chartSvg: document.getElementById("chartSvg"),
@@ -749,71 +747,95 @@
     }
 
     if (state.goal.weightKg !== null) {
-      const targetWeight = state.goal.weightKg;
-      const targetBodyFat = state.goal.bodyFatPct;
-      dom.goalValue.textContent = formatNumber(toDisplayWeight(targetWeight), 1);
+      dom.goalValue.textContent = formatNumber(toDisplayWeight(state.goal.weightKg), 1);
       dom.goalDate.textContent = state.goal.date ? formatGoalDate(state.goal.date) : "No deadline";
       dom.goalDivider.hidden = false;
       dom.goalBodyFatRow.hidden = false;
-
-      if (targetBodyFat !== null) {
-        dom.goalBodyFatValue.textContent = formatNumber(targetBodyFat, 1);
-      } else {
-        dom.goalBodyFatValue.textContent = "—";
-      }
-
-      if (metrics.leanMassKg !== null && targetWeight > metrics.leanMassKg) {
-        const expectedBodyFat = (1 - metrics.leanMassKg / targetWeight) * 100;
-        dom.goalBodyFatNote.textContent = `At target: ~${formatNumber(expectedBodyFat, 1)}%`;
-      } else if (metrics.leanMassKg !== null) {
-        dom.goalBodyFatNote.textContent = "Below current lean mass";
-      } else {
-        dom.goalBodyFatNote.textContent = "Add body fat for an estimate";
-      }
-
-      if (metrics.weightAvgKg !== null) {
-        const startSnapshot = getGoalStartSnapshot(state.goal);
-        const startWeight =
-          startSnapshot.weightKg ?? metrics.weightWeeks[0]?.avg ?? metrics.weightAvgKg;
-        const goal = getGoalProgress(metrics.weightAvgKg, startWeight, targetWeight);
-        const progressPercent = Math.round(goal.progress * 100);
-        dom.goalProgressWrap.hidden = false;
-        dom.goalProgressBar.style.width = `${progressPercent}%`;
-        dom.goalProgressLabel.textContent = `${progressPercent}%`;
-
-        if (goal.reached) {
-          dom.goalProgressLabel.textContent = "100%";
-          dom.goalFoot.textContent = "Goal reached. Nicely done.";
-        } else {
-          const remaining = Math.abs(metrics.weightAvgKg - targetWeight);
-          let copy = `${formatNumber(toDisplayWeight(remaining), 1)} ${unit} to go`;
-          if (state.goal.date) {
-            const targetDate = parseDateOnly(state.goal.date);
-            const daysLeft = targetDate
-              ? Math.ceil((targetDate.getTime() - new Date().getTime()) / DAY_MS)
-              : null;
-            if (daysLeft !== null && daysLeft > 0) {
-              const weeksLeft = daysLeft / 7;
-              const pace = toDisplayWeight(remaining) / weeksLeft;
-              copy += ` · ${formatNumber(pace, 1)} ${unit}/wk needed`;
-            } else if (daysLeft !== null) {
-              copy += " · target date passed";
-            }
-          }
-          dom.goalFoot.textContent = copy;
-        }
-      } else {
-        dom.goalProgressWrap.hidden = true;
-        dom.goalFoot.textContent = "Log a weigh-in to start tracking progress.";
-      }
+      dom.goalBodyFatValue.textContent =
+        state.goal.bodyFatPct !== null
+          ? formatNumber(state.goal.bodyFatPct, 1)
+          : "—";
     } else {
       dom.goalValue.textContent = "—";
       dom.goalDate.textContent = "Not set";
-      dom.goalProgressWrap.hidden = true;
       dom.goalDivider.hidden = true;
       dom.goalBodyFatRow.hidden = true;
-      dom.goalFoot.textContent = "Set a target weight in settings.";
     }
+  }
+
+  function setPaceFlare(text, tone, description = "") {
+    if (!dom.goalPaceFlare) return;
+    dom.goalPaceFlare.hidden = !text;
+    dom.goalPaceFlare.textContent = text || "";
+    dom.goalPaceFlare.className = `pace-flare is-${tone}`;
+    dom.goalPaceFlare.title = description;
+  }
+
+  function renderGoalProgressRow() {
+    const unit = weightUnit();
+    const metrics = calculateMetrics();
+    const goal = state.goal;
+
+    if (goal.weightKg === null) {
+      dom.goalProgressBar.style.width = "0%";
+      dom.goalProgressLabel.textContent = "—";
+      setPaceFlare("Set a goal in settings", "neutral");
+      return;
+    }
+
+    if (metrics.weightAvgKg === null) {
+      dom.goalProgressBar.style.width = "0%";
+      dom.goalProgressLabel.textContent = "—";
+      setPaceFlare("Need more weigh-ins", "neutral");
+      return;
+    }
+
+    const currentWeight = metrics.weightAvgKg;
+    const startSnapshot = getGoalStartSnapshot(goal);
+    const startWeight =
+      startSnapshot.weightKg ?? metrics.weightWeeks[0]?.avg ?? currentWeight;
+    const progress = getGoalProgress(currentWeight, startWeight, goal.weightKg);
+    const progressPercent = Math.round(progress.progress * 100);
+    dom.goalProgressBar.style.width = `${progressPercent}%`;
+    dom.goalProgressLabel.textContent = String(progressPercent);
+
+    if (progress.reached) {
+      setPaceFlare("Goal reached", "good");
+      return;
+    }
+
+    const targetDate = parseDateOnly(goal.date);
+    if (!targetDate) {
+      setPaceFlare("No deadline", "neutral", "Set a target date to calculate a required pace.");
+      return;
+    }
+
+    const today = startOfDay(new Date());
+    const daysLeft = Math.ceil((targetDate.getTime() - today.getTime()) / DAY_MS);
+    if (daysLeft <= 0) {
+      setPaceFlare("Deadline passed", "warm");
+      return;
+    }
+
+    const weeksLeft = daysLeft / 7;
+    const requiredKgPerWeek = (goal.weightKg - currentWeight) / weeksLeft;
+    const category = window.WeighlinePace.classify(requiredKgPerWeek, currentWeight);
+
+    if (category.direction === "maintain") {
+      setPaceFlare("Maintain", category.tone, category.description);
+      return;
+    }
+
+    const pace = formatNumber(
+      Math.abs(toDisplayWeight(requiredKgPerWeek)),
+      Math.abs(toDisplayWeight(requiredKgPerWeek)) < 0.1 ? 2 : 1,
+    );
+    const action = category.direction === "cut" ? "Cut" : "Gain";
+    setPaceFlare(
+      `${action} ${pace} ${unit}/wk · ${category.shortLabel}`,
+      category.tone,
+      category.description,
+    );
   }
 
   function renderComposition() {
@@ -822,7 +844,7 @@
     const sex = state.profile.referenceSex;
 
     dom.compositionSubtitle.textContent = state.profile.heightCm
-      ? "Ranges are general fitness references, not medical advice."
+      ? "Weekly averages with general fitness context."
       : "Add your height to unlock BMI, lean mass, and FFMI.";
 
     if (metrics.bmi !== null) {
@@ -1345,6 +1367,7 @@
     updateTodayLabel();
     renderSummary();
     renderComposition();
+    renderGoalProgressRow();
     renderChart();
     renderHistory();
     if (dom.logDialog.open) renderFullLog();

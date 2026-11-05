@@ -127,11 +127,6 @@
             <span class="stat-value" id="goalValue">—</span>
             <span class="stat-unit" id="goalUnit">kg</span>
           </div>
-          <div class="goal-progress" id="goalProgressWrap" hidden>
-            <div class="goal-progress-track"><span id="goalProgressBar"></span></div>
-            <span class="goal-progress-label" id="goalProgressLabel">0%</span>
-          </div>
-          <span class="overview-delta" id="goalFoot">Set a target weight in settings.</span>
         </div>
         <div class="overview-divider" id="goalDivider" hidden></div>
         <div class="overview-secondary" id="goalBodyFatRow" hidden>
@@ -139,7 +134,6 @@
             <span class="overview-secondary-label">Body fat goal</span>
             <div class="overview-secondary-value"><strong id="goalBodyFatValue">—</strong><span>%</span></div>
           </div>
-          <span class="overview-secondary-note" id="goalBodyFatNote">No body fat target</span>
         </div>
       </article>
     </section>
@@ -206,9 +200,9 @@
     <section class="composition-section" aria-labelledby="compositionHeading">
       <div class="section-heading">
         <div>
-          <p class="section-kicker">Body composition</p>
-          <h2 id="compositionHeading">More than the scale</h2>
-          <p class="section-subtitle" id="compositionSubtitle">Add your height to unlock BMI, lean mass, and FFMI.</p>
+          <p class="section-kicker">Body &amp; goal</p>
+          <h2 id="compositionHeading">Your stats</h2>
+          <p class="section-subtitle" id="compositionSubtitle">Weekly averages, context ranges, and goal progress.</p>
         </div>
       </div>
 
@@ -236,6 +230,16 @@
           </div>
           <div class="metric-scale" id="ffmiScale" hidden></div>
           <div class="composition-value"><span class="metric-value" id="ffmiValue">—</span><span class="metric-unit">kg/m²</span></div>
+        </div>
+        <div class="composition-row composition-goal-row" id="goalProgressRow">
+          <div class="composition-name">
+            <span class="metric-label">Goal progress</span>
+          </div>
+          <div class="goal-progress-stack">
+            <div class="goal-progress"><div class="goal-progress-track"><span id="goalProgressBar"></span></div></div>
+            <span class="pace-flare" id="goalPaceFlare" hidden></span>
+          </div>
+          <div class="composition-value"><span class="metric-value" id="goalProgressLabel">—</span><span class="metric-unit">%</span></div>
         </div>
       </div>
     </section>
@@ -491,6 +495,7 @@
 
   <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="false"></div>
 
+  <script src="pace.js" defer></script>
   <script src="app.js" defer></script>
 </body>
 </html>
