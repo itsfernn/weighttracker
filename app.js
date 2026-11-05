@@ -444,21 +444,44 @@
       .sort((a, b) => a.weekStart.getTime() - b.weekStart.getTime());
   }
 
+  function getWeeklySnapshot() {
+    const weightWeeks = groupEntriesByWeek(state.entries, "weight");
+    const bodyFatWeeks = groupEntriesByWeek(state.entries, "bodyFat");
+    const weightWeek = weightWeeks.length ? weightWeeks.at(-1) : null;
+    const bodyFatWeek = bodyFatWeeks.length ? bodyFatWeeks.at(-1) : null;
+    const compositionWeightKg =
+      bodyFatWeek && bodyFatWeek.entries.length
+        ? bodyFatWeek.entries.reduce((sum, entry) => sum + entry.weightKg, 0) /
+          bodyFatWeek.entries.length
+        : null;
+
+    return {
+      weightWeeks,
+      bodyFatWeeks,
+      weightWeek,
+      bodyFatWeek,
+      weightAvgKg: weightWeek ? weightWeek.avg : null,
+      bodyFatAvgPct: bodyFatWeek ? bodyFatWeek.avg : null,
+      compositionWeightKg,
+    };
+  }
+
   function calculateMetrics() {
-    const latest = getLatestEntry();
-    const latestBodyFat = getLatestBodyFatEntry();
+    const snapshot = getWeeklySnapshot();
     const heightCm = state.profile.heightCm;
     const heightM = heightCm ? heightCm / 100 : null;
     const bmi =
-      latest && heightM ? latest.weightKg / (heightM * heightM) : null;
-    const bodyFatPct = latestBodyFat ? latestBodyFat.bodyFatPct : null;
+      snapshot.weightAvgKg !== null && heightM
+        ? snapshot.weightAvgKg / (heightM * heightM)
+        : null;
+    const bodyFatPct = snapshot.bodyFatAvgPct;
     const leanMassKg =
-      latestBodyFat && bodyFatPct !== null
-        ? latestBodyFat.weightKg * (1 - bodyFatPct / 100)
+      snapshot.compositionWeightKg !== null && bodyFatPct !== null
+        ? snapshot.compositionWeightKg * (1 - bodyFatPct / 100)
         : null;
     const fatMassKg =
-      latestBodyFat && bodyFatPct !== null
-        ? latestBodyFat.weightKg * (bodyFatPct / 100)
+      snapshot.compositionWeightKg !== null && bodyFatPct !== null
+        ? snapshot.compositionWeightKg * (bodyFatPct / 100)
         : null;
     const ffmi =
       leanMassKg !== null && heightM ? leanMassKg / (heightM * heightM) : null;
@@ -466,8 +489,7 @@
       ffmi !== null && heightM ? ffmi + 6.3 * (1.8 - heightM) : null;
 
     return {
-      latest,
-      latestBodyFat,
+      ...snapshot,
       bmi,
       bodyFatPct,
       leanMassKg,
@@ -647,14 +669,12 @@
   function renderSummary() {
     const unit = weightUnit();
     const metrics = calculateMetrics();
-    const latest = getLatestEntry();
-    const weeklyGroups = groupEntriesByWeek(state.entries, "weight");
-    const latestWeek = weeklyGroups.length ? weeklyGroups[weeklyGroups.length - 1] : null;
-    const previousWeek = weeklyGroups.length > 1 ? weeklyGroups[weeklyGroups.length - 2] : null;
-    const weeklyBodyFatGroups = groupEntriesByWeek(state.entries, "bodyFat");
-    const latestBodyFatWeek = weeklyBodyFatGroups.length
-      ? weeklyBodyFatGroups[weeklyBodyFatGroups.length - 1]
-      : null;
+    const latestWeek = metrics.weightWeek;
+    const previousWeek =
+      metrics.weightWeeks.length > 1
+        ? metrics.weightWeeks[metrics.weightWeeks.length - 2]
+        : null;
+    const latestBodyFatWeek = metrics.bodyFatWeek;
     dom.weeklyAverageUnit.textContent = unit;
     dom.goalUnit.textContent = unit;
 
@@ -705,9 +725,9 @@
         dom.goalBodyFatNote.textContent = "Add body fat for an estimate";
       }
 
-      if (latest) {
-        const start = state.entries[0];
-        const goal = getGoalProgress(latest.weightKg, start.weightKg, targetWeight);
+      if (metrics.weightAvgKg !== null) {
+        const startWeight = metrics.weightWeeks[0]?.avg ?? metrics.weightAvgKg;
+        const goal = getGoalProgress(metrics.weightAvgKg, startWeight, targetWeight);
         const progressPercent = Math.round(goal.progress * 100);
         dom.goalProgressWrap.hidden = false;
         dom.goalProgressBar.style.width = `${progressPercent}%`;
@@ -717,7 +737,7 @@
           dom.goalProgressLabel.textContent = "100%";
           dom.goalFoot.textContent = "Goal reached. Nicely done.";
         } else {
-          const remaining = Math.abs(latest.weightKg - targetWeight);
+          const remaining = Math.abs(metrics.weightAvgKg - targetWeight);
           let copy = `${formatNumber(toDisplayWeight(remaining), 1)} ${unit} to go`;
           if (state.goal.date) {
             const targetDate = parseDateOnly(state.goal.date);
